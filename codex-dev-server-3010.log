@@ -1,0 +1,10 @@
+
+> portfolio-web@0.1.0 dev
+> next dev --port 3010
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3010
+- Network:       http://192.168.1.5:3010
+- Environments: .env.local
+✓ Ready in 1483ms
+[?25h
