@@ -1,5 +1,16 @@
+import type { Metadata } from "next";
 import { readContent } from "@/lib/storage";
+import { getSiteUrl } from "@/lib/site-url";
 import PlayerPageClient from "@/components/player/PlayerPageClient";
+
+const siteUrl = getSiteUrl();
+
+export const metadata: Metadata = {
+  title: "Video Player | CreativeXCreations",
+  description: "Watch a selected CreativeXCreations video project.",
+  alternates: siteUrl ? { canonical: `${siteUrl}/player` } : undefined,
+  robots: { index: false, follow: true },
+};
 
 export default async function PlayerPage({
   searchParams,

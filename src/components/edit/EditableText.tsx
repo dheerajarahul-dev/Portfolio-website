@@ -3,8 +3,19 @@
 import { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
 import { useSiteContent } from "@/context/SiteContentContext";
+import { settingsKey, toEditableStyle } from "./visual-settings";
+import EditableSurface from "./EditableSurface";
 
 type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4";
+
+function formatText(value: string, highlightX: boolean) {
+  if (!highlightX) return value;
+  return value.split(/(x)/gi).map((part, index) =>
+    part.toLowerCase() === "x"
+      ? <span key={`${part}-${index}`} className="brand-x-bulb">{part}</span>
+      : part
+  );
+}
 
 export default function EditableText({
   path,
@@ -12,24 +23,41 @@ export default function EditableText({
   as: Tag = "span",
   className = "",
   multiline = false,
+  showEditButton = true,
+  highlightX = false,
 }: {
   path: string;
   value: string;
   as?: Tag;
   className?: string;
   multiline?: boolean;
+  showEditButton?: boolean;
+  highlightX?: boolean;
 }) {
-  const { editMode, updatePath } = useSiteContent();
+  const { editMode, updatePath, selectPath } = useSiteContent();
+  const { content, registerElement } = useSiteContent();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const elementSettings = content.editor?.elements?.[settingsKey(path)];
+  const style = toEditableStyle(elementSettings);
+
+  useEffect(() => {
+    registerElement({
+      path,
+      kind: "text",
+      label: elementSettings?.label || value || path,
+      section: path.split(".")[0] || "Page",
+      multiline,
+    });
+  }, [elementSettings?.label, multiline, path, registerElement, value]);
 
   useEffect(() => {
     if (editing && inputRef.current) inputRef.current.focus();
   }, [editing]);
 
   if (!editMode) {
-    return <Tag className={className}>{value}</Tag>;
+    return <Tag className={className} style={style}>{formatText(value, highlightX)}</Tag>;
   }
 
   const commit = () => {
@@ -49,6 +77,7 @@ export default function EditableText({
         onBlur={commit}
         onKeyDown={(e) => e.key === "Escape" && setEditing(false)}
         className={`${shared} ${className}`}
+        style={style}
       />
     ) : (
       <input
@@ -61,28 +90,32 @@ export default function EditableText({
           if (e.key === "Escape") setEditing(false);
         }}
         className={`${shared} ${className}`}
+        style={style}
       />
     );
   }
 
   return (
-    <span
-      className={`group/edit relative inline-block max-w-full rounded-md transition-all hover:outline hover:outline-2 hover:outline-purple-400/70 hover:outline-offset-4 ${className}`}
-    >
-      <Tag className={className}>{value || " "}</Tag>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setDraft(value);
-          setEditing(true);
-        }}
-        className="absolute -right-2 -top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-purple-600 text-white opacity-0 shadow-lg transition group-hover/edit:opacity-100"
-        aria-label="Edit text"
-      >
-        <Pencil className="h-3.5 w-3.5" />
-      </button>
-    </span>
+    <EditableSurface path={path} as={Tag === "span" ? "span" : "div"} className={className} style={style}>
+      <Tag className="group/edit relative max-w-full rounded-md transition-all">
+        {formatText(value || " ", highlightX)}
+        {showEditButton && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              selectPath(path);
+              setDraft(value);
+              setEditing(true);
+            }}
+            className="absolute -right-2 -top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-purple-600 text-white opacity-0 shadow-lg transition group-hover/edit:opacity-100"
+            aria-label="Edit text"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </Tag>
+    </EditableSurface>
   );
 }

@@ -13,15 +13,6 @@ export interface StatItem {
   icon: IconName;
 }
 
-export interface WorkItem {
-  id: string;
-  title: string;
-  category: string;
-  thumbnailUrl: string;
-  videoUrl: string;
-  description?: string;
-}
-
 export interface BenefitItem {
   title: string;
   description: string;
@@ -44,11 +35,68 @@ export interface ContactChannel {
   href: string;
 }
 
+export interface MediaLibraryItem {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  type: "video" | "photo";
+  sourceType: string;
+  mediaUrl: string;
+  thumbnailUrl: string;
+  crop?: {
+    x: number;
+    y: number;
+    scale: number;
+  };
+  layout?: EditableLayout;
+  published: boolean;
+  featured: boolean;
+  altText?: string;
+  createdAt?: string;
+}
+
 export interface PlayerSettings {
   title: string;
   description: string;
   backgroundUrl: string;
   accentColor: string;
+}
+
+export interface FounderProfile {
+  name: string;
+  role: string;
+  photoUrl: string;
+  biography: string;
+}
+
+export interface EditableLayout {
+  x: number;
+  y: number;
+  scale: number;
+}
+
+export interface VisualElementSettings {
+  x?: number;
+  y?: number;
+  scale?: number;
+  width?: string;
+  height?: string;
+  maxWidth?: string;
+  padding?: string;
+  margin?: string;
+  textAlign?: "left" | "center" | "right";
+  fontSize?: string;
+  fontWeight?: string;
+  lineHeight?: string;
+  letterSpacing?: string;
+  color?: string;
+  backgroundColor?: string;
+  borderRadius?: string;
+  opacity?: number;
+  objectFit?: "contain" | "cover";
+  altText?: string;
+  label?: string;
 }
 
 export interface SiteContent {
@@ -59,6 +107,7 @@ export interface SiteContent {
   navbar: {
     brandName: string;
     logoUrl: string;
+    contactLabel: string;
     links: { name: string; href: string }[];
   };
   hero: {
@@ -66,6 +115,9 @@ export interface SiteContent {
     line2: string;
     punchline: string;
     subheading: string;
+    ctaWork: string;
+    ctaReel: string;
+    ctaContact: string;
     youtubeVideoId: string;
   };
   stats: {
@@ -76,7 +128,6 @@ export interface SiteContent {
   featuredWork: {
     eyebrow: string;
     title: string;
-    items: WorkItem[];
   };
   whyChooseUs: {
     eyebrow: string;
@@ -94,6 +145,7 @@ export interface SiteContent {
     pacingText: string;
   };
   player: PlayerSettings;
+  founder: FounderProfile;
   pricing: {
     eyebrow: string;
     title: string;
@@ -107,12 +159,12 @@ export interface SiteContent {
     textBlocks: string[];
     imageUrl: string;
     imageRounded: boolean;
+    layout?: EditableLayout;
   }[];
-  videoSection: {
-    eyebrow: string;
+  mediaLibrary: {
     title: string;
     description: string;
-    items: WorkItem[];
+    items: MediaLibraryItem[];
   };
   about: {
     eyebrow: string;
@@ -120,6 +172,7 @@ export interface SiteContent {
     paragraph1: string;
     paragraph2: string;
     tools: string[];
+    toolLogos?: { label: string; src: string; alt: string }[];
     summaryTitle: string;
     summaryText: string;
     workflowText: string;
@@ -129,7 +182,28 @@ export interface SiteContent {
     badge: string;
     title: string;
     description: string;
+    directTitle: string;
+    directHeading: string;
+    directDescription: string;
+    channelAction: string;
+    form: {
+      nameLabel: string;
+      namePlaceholder: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      projectTypeLabel: string;
+      projectTypes: string[];
+      subjectLabel: string;
+      subjectPlaceholder: string;
+      messageLabel: string;
+      messagePlaceholder: string;
+      submitLabel: string;
+      successMessage: string;
+    };
     channels: ContactChannel[];
+  };
+  editor?: {
+    elements: Record<string, VisualElementSettings>;
   };
 }
 
@@ -137,8 +211,36 @@ export interface ContactMessage {
   id: string;
   name: string;
   email: string;
+  subject?: string;
   projectType: string;
   message: string;
   createdAt: string;
   read: boolean;
+  deletedAt?: string | null;
+}
+
+export type AdminUserRole = "owner" | "editor" | "media" | "messages";
+
+export type AdminPermission =
+  | "overview:view"
+  | "media:manage"
+  | "site:edit"
+  | "messages:view"
+  | "messages:delete"
+  | "accounts:manage"
+  | "settings:view";
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  role: AdminUserRole;
+  permissions: AdminPermission[];
+  active: boolean;
+  createdAt: string;
+}
+
+export interface AdminUserRecord extends AdminUser {
+  passwordHash: string;
+  passwordSalt: string;
+  updatedAt: string;
 }

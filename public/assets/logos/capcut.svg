@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">CapCut</title>
+  <rect width="1024" height="1024" fill="#fff"/>
+  <path d="M292 333h440c41 0 74 33 74 74v62L716 520 806 572v62c0 41-33 74-74 74H292c-41 0-74-33-74-74v-62l270-154-270-155v-56c0-41 33-74 74-74Zm0 83 282 162 158-91v-58c0-7-5-13-13-13H292Zm440 192L574 517 292 679h427c8 0 13-5 13-13Z" fill="#000"/>
+  <path d="M218 635 806 299v96L218 731v-96Z" fill="#000"/>
+</svg>

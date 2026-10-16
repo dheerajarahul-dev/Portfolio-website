@@ -1,129 +1,258 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useSiteContent } from "@/context/SiteContentContext";
+import EditableText from "./edit/EditableText";
+import EditableImage from "./edit/EditableImage";
+import { scrollToSection } from "@/lib/scroll-to-section";
 
 const LOGO_SRC = "/logo.png";
 
 export default function Navbar() {
-  const { content } = useSiteContent();
+  const { content, editMode, selectPath } = useSiteContent();
+  const pathname = usePathname();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { navbar } = content;
-  const brandParts = navbar.brandName.split("X");
-  const logoSrc = navbar.logoUrl || LOGO_SRC;
+  const [activeSection, setActiveSection] = useState("");
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const brandText = (content.navbar.brandName || "CREATIVEXCREATIONS").replace(/X/gi, " X ");
+  const logoSrc = content.navbar.logoUrl || LOGO_SRC;
+  const navItems = content.navbar.links;
+  const displayedActiveSection = pathname === "/" ? activeSection : "";
+  const brandContent = (
+    <>
+      <div className="relative h-8 w-8 shrink-0 sm:h-10 sm:w-10">
+        <EditableImage path="navbar.logoUrl" value={logoSrc} className="h-full w-full object-contain" />
+      </div>
+      <EditableText
+        path="navbar.brandName"
+        value={content.navbar.brandName || brandText}
+        as="span"
+        highlightX
+        className="truncate font-space text-[0.68rem] font-bold tracking-[0.16em] text-white sm:text-[0.8rem]"
+      />
+    </>
+  );
 
   useEffect(() => {
     let frame = 0;
-    const updateScrolled = () => {
-      frame = 0;
-      setIsScrolled(window.scrollY > 50);
+    const updateScrollState = () => {
+      setIsScrolled(window.scrollY > 18);
+      if (pathname !== "/") {
+        setActiveSection("");
+        return;
+      }
+
+      const center = window.innerHeight / 2;
+      const active = navItems.find((item) => {
+        if (!item.href.startsWith("#")) return false;
+        const section = document.getElementById(item.href.slice(1));
+        if (!section) return false;
+        const rect = section.getBoundingClientRect();
+        return rect.top <= center && rect.bottom >= center;
+      });
+      setActiveSection(active?.href.slice(1) || "");
     };
     const handleScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateScrolled);
+      if (!frame) {
+        frame = window.requestAnimationFrame(() => {
+          frame = 0;
+          updateScrollState();
+        });
+      }
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    updateScrolled();
+    frame = window.requestAnimationFrame(() => {
+      frame = 0;
+      updateScrollState();
+    });
+
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [navItems, pathname]);
 
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsMobileMenuOpen(false);
+      mobileMenuButtonRef.current?.focus();
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [isMobileMenuOpen]);
+
+  const handleNavigation = (href: string) => {
+    if (editMode) return;
+    setIsMobileMenuOpen(false);
+    if (!href.startsWith("#")) return;
+
+    if (pathname !== "/") {
+      router.push(`/${href}`);
+      return;
+    }
+
+    scrollToSection(href.slice(1));
+  };
+
+  const handleHomeOrTop = () => {
+    if (editMode) {
+      selectPath("navbar.logoUrl");
+      return;
+    }
+    if (pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    router.push("/");
+  };
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
-          isScrolled
-            ? "glass-panel py-3 shadow-2xl border-b border-white/5"
-            : "bg-transparent py-4 md:py-5"
-        }`}
+      <motion.header
+        initial={false}
+        animate={{ opacity: 1 }}
+        className="fixed inset-x-0 top-0 z-50 pt-3 sm:pt-4"
       >
-        <div className="flex w-full items-center justify-between gap-3 pl-3 pr-3 sm:pl-5 sm:pr-5 lg:pl-6 lg:pr-6">
-          <motion.button
-            type="button"
-            onClick={scrollToTop}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex min-w-0 shrink items-center gap-2 sm:gap-3"
-            aria-label="Scroll to top"
+        <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-6">
+          <div
+            className={`header-shell flex items-center justify-between gap-2 rounded-full px-3 py-2 shadow-[0_12px_40px_rgba(0,0,0,0.22)] transition-[background-color,border-color,box-shadow] duration-300 sm:px-4 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-3 md:py-2.5 ${
+              isScrolled ? "bg-[#0d0d11]/82" : "bg-[#0d0d11]/32"
+            }`}
           >
-            <motion.div
-              className="relative h-9 w-9 shrink-0 sm:h-12 sm:w-12"
-              whileHover={{ rotate: [0, -3, 3, 0], scale: 1.05 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Image
-                src={logoSrc}
-                alt="CreativeXCreations"
-                fill
-                className="object-contain drop-shadow-[0_0_12px_rgba(124,58,237,0.35)]"
-                priority
-                sizes="48px"
-              />
-            </motion.div>
-            <span className="max-w-[11rem] truncate font-space text-sm font-bold tracking-wider text-white min-[380px]:inline sm:max-w-none sm:text-base lg:text-lg">
-              {brandParts[0] || "CREATIVE"}
-              <span className="text-brand-accent">X</span>
-              {brandParts[1] || "CREATIONS"}
-            </span>
-          </motion.button>
+            <div className="flex min-w-0 items-center justify-start">
+              {editMode ? (
+                <div className="flex min-w-0 items-center gap-2 px-1 py-1 text-left sm:gap-3">{brandContent}</div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleHomeOrTop}
+                  className="flex min-w-0 items-center gap-2 rounded-full px-1 py-1 text-left outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-purple-400/80 sm:gap-3"
+                  aria-label="Go to the homepage"
+                >
+                  {brandContent}
+                </button>
+              )}
+            </div>
 
-          <div className="hidden md:flex flex-1 items-center justify-center gap-8 lg:gap-10">
-            {navbar.links.map((link) => (
-              <Link key={link.name} href={link.href} className="nav-link">
-                {link.name}
-              </Link>
-            ))}
-          </div>
+            <nav className="hidden items-center justify-center gap-6 md:flex lg:gap-8" aria-label="Primary navigation">
+              {navItems.map((link) => {
+                const isHashLink = link.href.startsWith("#");
 
-          <div className="flex shrink-0 items-center gap-2">
-            <Link
-              href="#contact"
-              className="hidden md:inline-flex items-center gap-2 rounded-full bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]"
-            >
-              Let&apos;s Edit <ArrowUpRight className="h-4 w-4" />
-            </Link>
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-white"
-              aria-label="Menu"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+                if (isHashLink) {
+                  return (
+                    <button
+                      key={link.name}
+                      type="button"
+                      onClick={() => handleNavigation(link.href)}
+                      className={`nav-link ${displayedActiveSection === link.href.slice(1) ? "nav-link-active" : ""}`}
+                    >
+                      <EditableText path={`navbar.links.${content.navbar.links.indexOf(link)}.name`} value={link.name} as="span" showEditButton={!editMode} />
+                    </button>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="nav-link"
+                    onClick={(event) => {
+                      if (!editMode) return;
+                      event.preventDefault();
+                      selectPath(`navbar.links.${content.navbar.links.indexOf(link)}.name`);
+                    }}
+                  >
+                    <EditableText path={`navbar.links.${content.navbar.links.indexOf(link)}.name`} value={link.name} as="span" showEditButton={!editMode} />
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => handleNavigation("#contact")}
+                className="hidden items-center gap-1.5 rounded-full bg-[#7C3AED] px-3.5 py-2 text-[0.68rem] font-semibold text-white shadow-[0_0_20px_rgba(124,58,237,0.32)] transition hover:-translate-y-0.5 hover:bg-[#8b5cf6] focus-visible:ring-2 focus-visible:ring-purple-300 sm:text-xs md:inline-flex"
+              >
+                <EditableText path="navbar.contactLabel" value={content.navbar.contactLabel} as="span" showEditButton={!editMode} />
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                type="button"
+                ref={mobileMenuButtonRef}
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white md:hidden"
+                aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={isMobileMenuOpen}
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
         </div>
-      </motion.nav>
+      </motion.header>
 
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-1 bg-black/92 px-6 backdrop-blur-lg md:hidden"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-x-0 top-[4rem] z-40 mx-3 rounded-2xl border border-white/10 bg-[#0d0d11]/90 p-2.5 shadow-2xl backdrop-blur-xl md:hidden"
           >
-            {navbar.links.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full rounded-2xl py-3 text-center font-space text-xl font-semibold text-white/75 hover:bg-white/5"
-              >
-                {link.name}
-              </Link>
-            ))}
+            <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+              {navItems.map((link) => {
+                const isHashLink = link.href.startsWith("#");
+
+                if (isHashLink) {
+                  return (
+                    <button
+                      key={link.name}
+                      type="button"
+                      onClick={() => handleNavigation(link.href)}
+                      className={`w-full rounded-xl border px-3.5 py-2.5 text-left text-sm font-medium transition hover:border-white/10 hover:bg-white/5 ${displayedActiveSection === link.href.slice(1) ? "border-purple-300/30 bg-purple-500/10 text-white" : "border-transparent text-white/80"}`}
+                    >
+                      <EditableText path={`navbar.links.${content.navbar.links.indexOf(link)}.name`} value={link.name} as="span" showEditButton={!editMode} />
+                    </button>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={(event) => {
+                      if (editMode) {
+                        event.preventDefault();
+                        selectPath(`navbar.links.${content.navbar.links.indexOf(link)}.name`);
+                        return;
+                      }
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full rounded-xl border px-3.5 py-2.5 text-left text-sm font-medium transition hover:border-white/10 hover:bg-white/5 ${displayedActiveSection === link.href.slice(1) ? "border-purple-300/30 bg-purple-500/10 text-white" : "border-transparent text-white/80"}`}
+                    onMouseDown={(event) => {
+                      if (!editMode) return;
+                      event.preventDefault();
+                      selectPath(`navbar.links.${content.navbar.links.indexOf(link)}.name`);
+                    }}
+                  >
+                    <EditableText path={`navbar.links.${content.navbar.links.indexOf(link)}.name`} value={link.name} as="span" showEditButton={!editMode} />
+                  </Link>
+                );
+              })}
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>

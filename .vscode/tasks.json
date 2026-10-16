@@ -1,0 +1,51 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Next dev",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"group": "build"
+		},
+		{
+			"label": "Build app (bypass policy)",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -Command \"cd 'd:\\CREATIVE X CREATIONS\\portfolio web'; npm run build",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build via bypass script",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"d:\\tmp\\portfolio-web-build.ps1\"",
+			"isBackground": false
+		},
+		{
+			"label": "Start dev server via script",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"d:\\tmp\\portfolio-web-dev.ps1\"",
+			"isBackground": true,
+			"group": "build"
+		},
+		{
+			"label": "Stop stale Next dev server",
+			"type": "shell",
+			"command": "taskkill /PID 18484 /F",
+			"isBackground": false
+		},
+		{
+			"label": "Start dev server clean",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"d:\\tmp\\portfolio-web-dev.ps1\"",
+			"isBackground": true,
+			"group": "build"
+		},
+		{
+			"label": "Check repo status",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"d:\\tmp\\git-status.ps1\"",
+			"isBackground": false
+		}
+	]
+}

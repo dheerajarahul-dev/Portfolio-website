@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import type { SiteContent } from "@/lib/types";
 import { getGoogleDrivePreviewUrl, getMediaKind, getYoutubeIdFromUrl } from "@/lib/media";
 import { youtubeEmbedUrl } from "@/lib/youtube";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function PlayerPageClient({
   content,
@@ -16,8 +17,25 @@ export default function PlayerPageClient({
   videoUrl?: string;
   title: string;
 }) {
+  const router = useRouter();
   const effectiveVideoUrl = videoUrl || "";
   const effectiveTitle = title || content.player.title;
+  const goBack = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem("cxc-return-target") || "null") as {
+          path?: string;
+        } | null;
+        if (saved?.path) {
+          router.push(saved.path);
+          return;
+        }
+      } catch {
+        // ignore malformed state and fall back to site home
+      }
+    }
+    router.push("/");
+  };
   const kind = useMemo(
     () => (effectiveVideoUrl ? getMediaKind(effectiveVideoUrl) : ""),
     [effectiveVideoUrl]
@@ -44,38 +62,39 @@ export default function PlayerPageClient({
   );
 
   return (
+    <>
     <main className="min-h-screen bg-[#050505] text-white">
-      <section className="relative overflow-hidden px-4 py-10 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden px-2 py-5 sm:px-5 sm:py-8 lg:px-8">
         <div className="absolute inset-0 opacity-40" style={backgroundStyle} />
         <div className="absolute inset-0 bg-black/60" />
-        <div className="relative mx-auto max-w-6xl space-y-8">
-          <div className="flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-[#0c0c11]/95 p-6 backdrop-blur-sm sm:p-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-purple-300/80">{content.player.title}</p>
-                <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        <div className="relative mx-auto max-w-[92rem] space-y-4 sm:space-y-6">
+          <div className="rounded-2xl border border-white/10 bg-[#0c0c11]/95 px-4 py-3 backdrop-blur-sm sm:rounded-3xl sm:px-6 sm:py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 space-y-1.5">
+                <h1 className="break-words text-xl font-semibold text-white sm:text-3xl">
                   {effectiveTitle}
                 </h1>
-                <p className="max-w-3xl text-sm leading-7 text-white/70 sm:text-base">
+                <p className="hidden max-w-3xl text-sm leading-6 text-white/65 sm:block">
                   {content.player.description}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+              <div className="shrink-0">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/15 sm:px-4 sm:py-2.5 sm:text-sm"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Back to site
-                </Link>
+                  Back to library
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-[#111]/95 p-3 shadow-2xl shadow-black/20 sm:p-4">
+          <div className="rounded-xl border border-white/10 bg-[#111]/95 p-1.5 shadow-2xl shadow-black/20 sm:rounded-2xl sm:p-2">
             {effectiveVideoUrl ? (
-              <div className="relative overflow-hidden rounded-[1.75rem] bg-black">
-                <div className="aspect-video w-full bg-black" />
+              <div className="relative overflow-hidden rounded-lg bg-black sm:rounded-xl">
+                <div className="aspect-[4/3] w-full bg-black sm:aspect-video" />
                 {kind === "youtube" && youtubeId ? (
                   <iframe
                     src={youtubeEmbedUrl(youtubeId, {
@@ -98,7 +117,7 @@ export default function PlayerPageClient({
                 ) : kind === "video" ? (
                   <video
                     src={effectiveVideoUrl}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-contain"
                     controls
                     autoPlay
                     playsInline
@@ -116,13 +135,16 @@ export default function PlayerPageClient({
             )}
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-[#0b0c12]/95 p-6 text-white/80">
-            <p className="text-sm leading-7">
-              {content.player.description}
-            </p>
-          </div>
         </div>
       </section>
     </main>
+    <SiteFooter
+      brandName={content.navbar.brandName}
+      founderName={content.founder.name}
+      founderRole={content.founder.role}
+      founderPhotoUrl={content.founder.photoUrl}
+      contactChannels={content.contact.channels}
+    />
+    </>
   );
 }

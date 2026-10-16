@@ -7,13 +7,37 @@ export function getMediaKind(url: string): MediaKind {
   if (!trimmed) return "unknown";
   if (extractYoutubeId(trimmed)) return "youtube";
   if (isGoogleDriveUrl(trimmed)) return "drive";
-  if (/\.(mp4|webm|mov|m4v)(\?|$)/i.test(trimmed)) return "video";
-  if (trimmed.startsWith("http")) return "video";
+  const videoPath = trimmed.split(/[?#]/, 1)[0];
+  if (/\.(mp4|webm|mov|m4v)$/i.test(videoPath)) return "video";
   return "unknown";
 }
 
 export function getYoutubeIdFromUrl(url: string): string {
   return extractYoutubeId(url);
+}
+
+export function getMediaThumbnailUrl(item: {
+  type: "video" | "photo";
+  mediaUrl: string;
+  thumbnailUrl?: string;
+}): string {
+  for (const candidate of [item.thumbnailUrl, item.mediaUrl]) {
+    const url = candidate?.trim();
+    if (!url) continue;
+
+    const youtubeId = extractYoutubeId(url);
+    if (youtubeId) return youtubeThumbnail(youtubeId);
+
+    if (isGoogleDriveUrl(url)) {
+      const fileId = getGoogleDriveFileId(url);
+      if (fileId) return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w1280`;
+      continue;
+    }
+
+    if (item.type === "video" && /\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(url)) continue;
+    return url;
+  }
+  return "";
 }
 
 export function isGoogleDriveUrl(url: string): boolean {
@@ -43,42 +67,4 @@ export function youtubeThumbnail(
     max: "maxresdefault",
   };
   return `https://img.youtube.com/vi/${videoId}/${map[quality]}.jpg`;
-}
-
-export function normalizeWorkItem(raw: Record<string, unknown>): {
-  id: string;
-  title: string;
-  category: string;
-  thumbnailUrl: string;
-  videoUrl: string;
-} {
-  const legacy = raw as {
-    id?: string;
-    title?: string;
-    category?: string;
-    thumbnailUrl?: string;
-    thumbnail?: string;
-    videoUrl?: string;
-    video?: string;
-    youtubeId?: string;
-  };
-
-  let videoUrl = legacy.videoUrl || legacy.video || "";
-  if (!videoUrl && legacy.youtubeId) {
-    videoUrl = `https://www.youtube.com/watch?v=${legacy.youtubeId}`;
-  }
-
-  let thumbnailUrl = legacy.thumbnailUrl || legacy.thumbnail || "";
-  const ytId = getYoutubeIdFromUrl(videoUrl);
-  if (!thumbnailUrl && ytId) {
-    thumbnailUrl = youtubeThumbnail(ytId);
-  }
-
-  return {
-    id: String(legacy.id || crypto.randomUUID()),
-    title: String(legacy.title || "Untitled"),
-    category: String(legacy.category || "Project"),
-    thumbnailUrl,
-    videoUrl,
-  };
 }

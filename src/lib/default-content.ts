@@ -12,7 +12,9 @@ export const defaultContent: SiteContent = {
   navbar: {
     brandName: "CREATIVEXCREATIONS",
     logoUrl: "/logo.png",
+    contactLabel: "Contact Us",
     links: [
+      { name: "Library", href: "/library" },
       { name: "Work", href: "#work" },
       { name: "Why Us", href: "#why-us" },
       { name: "Pricing", href: "#pricing" },
@@ -25,6 +27,9 @@ export const defaultContent: SiteContent = {
     punchline: "We got you.",
     subheading:
       "High-retention cinematic edits designed to keep viewers watching, boost viewer retention, and convert traffic into core brand advocates.",
+    ctaWork: "Explore Work",
+    ctaReel: "Play 2026 Demo Reel",
+    ctaContact: "Contact Us",
     youtubeVideoId: heroId,
   },
   stats: {
@@ -58,29 +63,6 @@ export const defaultContent: SiteContent = {
   featuredWork: {
     eyebrow: "Featured work",
     title: "Cinematic edits that move audiences and drive retention.",
-    items: [
-      {
-        id: "1",
-        title: "Gaming Montage",
-        category: "Valorant Cinematic",
-        thumbnailUrl: youtubeThumbnail(heroId, "hq"),
-        videoUrl: `https://www.youtube.com/watch?v=${heroId}`,
-      },
-      {
-        id: "2",
-        title: "Podcast Opener",
-        category: "Brand Intro",
-        thumbnailUrl: youtubeThumbnail(heroId, "hq"),
-        videoUrl: `https://www.youtube.com/watch?v=${heroId}`,
-      },
-      {
-        id: "3",
-        title: "Studio Interview",
-        category: "Documentary Reel",
-        thumbnailUrl: youtubeThumbnail(heroId, "hq"),
-        videoUrl: `https://www.youtube.com/watch?v=${heroId}`,
-      },
-    ],
   },
   whyChooseUs: {
     eyebrow: "Why creators choose us",
@@ -120,11 +102,17 @@ export const defaultContent: SiteContent = {
       "Fast opening hooks, clear mid-sequence payoffs, and a powerful ending that anchors the brand identity in the viewer's mind.",
   },
   player: {
-    title: "Dedicated player experience",
+    title: "Video player",
     description:
       "A focused playback space with branded visuals, controls, and a clean layout optimized for every edit.",
     backgroundUrl: "",
     accentColor: "#7C3AED",
+  },
+  founder: {
+    name: "Dheeraj A",
+    role: "Founder & Creative Lead",
+    photoUrl: "",
+    biography: "Dheeraj A is the founder of CreativeXCreations. He built the site as a home for his video-editing portfolio and services, spanning creator-focused social videos, documentary pieces, motion graphics, and cinematic showcases. The work presented here emphasizes clear storytelling, deliberate pacing, polished visuals, and platform-ready delivery. His stated focus is helping creators present ideas with stronger visual structure and audience retention.",
   },
   pricing: {
     eyebrow: "Pricing",
@@ -177,29 +165,50 @@ export const defaultContent: SiteContent = {
     ],
   },
   customSections: [],
-  videoSection: {
-    eyebrow: "Video Library",
-    title: "Watch our latest edits and case studies.",
+  mediaLibrary: {
+    title: "Media Library",
     description:
-      "Short previews, case details, and high-retention examples you can share with clients or collaborators.",
+      "A curated library of published work, visuals, and client-ready edits from the CreativeXCreations portfolio.",
     items: [
       {
-        id: "video-1",
+        id: "library-video-1",
         title: "Brand Promo Reel",
+        description: "A fast-paced promo designed for high relevance across reels and short-form publishing.",
         category: "Social Video",
-        description:
-          "A fast-paced promo designed for high engagement across shorts and reels.",
+        type: "video",
+        sourceType: "youtube",
+        mediaUrl: `https://www.youtube.com/watch?v=${heroId}`,
         thumbnailUrl: youtubeThumbnail(heroId, "hq"),
-        videoUrl: `https://www.youtube.com/watch?v=${heroId}`,
+        published: true,
+        featured: true,
+        createdAt: new Date().toISOString(),
       },
       {
-        id: "video-2",
+        id: "library-video-2",
         title: "Interview Highlight",
-        category: "Documentary Cut",
-        description:
-          "A polished interview highlight with cinematic pacing and sound design.",
+        description: "A polished interview cut with cinematic pacing and clear narrative payoff.",
+        category: "Documentary",
+        type: "video",
+        sourceType: "youtube",
+        mediaUrl: `https://www.youtube.com/watch?v=${heroId}`,
         thumbnailUrl: youtubeThumbnail(heroId, "hq"),
-        videoUrl: `https://www.youtube.com/watch?v=${heroId}`,
+        published: true,
+        featured: false,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "library-photo-1",
+        title: "Studio Still",
+        description: "A cinematic still from a recent studio-backed creative shoot.",
+        category: "Photo",
+        type: "photo",
+        sourceType: "upload",
+        mediaUrl: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1200&q=80",
+        thumbnailUrl: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=900&q=80",
+        published: true,
+        featured: false,
+        altText: "Cinematic studio still",
+        createdAt: new Date().toISOString(),
       },
     ],
   },
@@ -210,12 +219,29 @@ export const defaultContent: SiteContent = {
       "CreativeXCreations specializes in cinematic edits for creators who want a premium, results-driven look. We pair strategic pacing, motion design, and platform insight with studio-level polish.",
     paragraph2:
       "Whether you need short-form reels, documentary-style content, or cinematic brand films, we build each project for watch-through, replay value, and emotional impact.",
-    tools: ["Premiere Pro", "After Effects", "DaVinci Resolve"],
+    tools: ["Premiere Pro", "After Effects", "CapCut"],
+    toolLogos: [
+      {
+        label: "Adobe Premiere Pro",
+        src: "/assets/logos/premiere-pro.svg",
+        alt: "Adobe Premiere Pro logo",
+      },
+      {
+        label: "Adobe After Effects",
+        src: "/assets/logos/after-effects.svg",
+        alt: "Adobe After Effects logo",
+      },
+      {
+        label: "CapCut",
+        src: "/assets/logos/capcut.svg",
+        alt: "CapCut logo",
+      },
+    ],
     summaryTitle: "Designed to feel premium and performance-ready.",
     summaryText:
       "We help creators convert attention into action, using cinematic motion, meaningful captions, and fast technical delivery.",
     workflowText:
-      "Adobe Premiere, After Effects, DaVinci Resolve, CapCut options with consistent creative direction.",
+      "Adobe Premiere Pro, After Effects, and CapCut, with consistent creative direction.",
     deliveryText:
       "Fast previews, clear revision rounds, and final export packages optimized for platforms and timelines.",
   },
@@ -224,6 +250,24 @@ export const defaultContent: SiteContent = {
     title: "Start your next cinematic project.",
     description:
       "Send the brief, share your creative direction, and we'll respond with the perfect edit strategy for your project.",
+    directTitle: "Direct contact",
+    directHeading: "Reach CreativeXCreations",
+    directDescription: "Prefer to connect directly? Use one of the channels below.",
+    channelAction: "Open",
+    form: {
+      nameLabel: "Name",
+      namePlaceholder: "Your name",
+      emailLabel: "Email",
+      emailPlaceholder: "you@example.com",
+      projectTypeLabel: "Project Type",
+      projectTypes: ["Short Form Edit", "Long Form Edit", "Thumbnail Design", "Motion Graphic & Infographic Edit", "Consultation", "Other"],
+      subjectLabel: "Subject",
+      subjectPlaceholder: "Example: Launch teaser for my brand",
+      messageLabel: "Message",
+      messagePlaceholder: "Tell us about your project",
+      submitLabel: "Send Inquiry",
+      successMessage: "Message sent! We’ll get back to you soon.",
+    },
     channels: [
       {
         label: "Email",
@@ -241,5 +285,8 @@ export const defaultContent: SiteContent = {
         href: "https://www.youtube.com/@creativexcreations",
       },
     ],
+  },
+  editor: {
+    elements: {},
   },
 };

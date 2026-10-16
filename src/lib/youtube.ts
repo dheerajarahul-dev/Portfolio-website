@@ -6,25 +6,27 @@ export function extractYoutubeId(input: string): string {
 
   try {
     const url = new URL(trimmed);
-    if (url.hostname.includes("youtu.be")) {
-      return url.pathname.slice(1).split("/")[0] || "";
+    const hostname = url.hostname.toLowerCase().replace(/^www\./, "");
+    const isShortUrl = hostname === "youtu.be";
+    const isYoutubeHost = [
+      "youtube.com",
+      "m.youtube.com",
+      "music.youtube.com",
+      "youtube-nocookie.com",
+      "m.youtube-nocookie.com",
+    ].includes(hostname);
+    if (!isShortUrl && !isYoutubeHost) return "";
+
+    const parts = url.pathname.split("/").filter(Boolean);
+    let videoId = isShortUrl ? parts[0] || "" : url.searchParams.get("v") || "";
+    if (!videoId) {
+      const pathTypeIndex = parts.findIndex((part) => ["embed", "shorts"].includes(part));
+      if (pathTypeIndex !== -1) videoId = parts[pathTypeIndex + 1] || "";
     }
-    const v = url.searchParams.get("v");
-    if (v) return v;
-    const parts = url.pathname.split("/");
-    const embedIndex = parts.indexOf("embed");
-    if (embedIndex !== -1 && parts[embedIndex + 1]) {
-      return parts[embedIndex + 1];
-    }
-    const shortsIndex = parts.indexOf("shorts");
-    if (shortsIndex !== -1 && parts[shortsIndex + 1]) {
-      return parts[shortsIndex + 1];
-    }
+    return /^[a-zA-Z0-9_-]{11}$/.test(videoId) ? videoId : "";
   } catch {
     return "";
   }
-
-  return "";
 }
 
 export function youtubeEmbedUrl(

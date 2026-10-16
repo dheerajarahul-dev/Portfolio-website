@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Script from "next/script";
 
 const SECTIONS = [
@@ -55,8 +55,6 @@ export function AnalyticsScripts() {
 }
 
 export default function SectionAnalytics() {
-  const timesRef = useRef<Record<string, number>>({});
-
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
 
@@ -75,7 +73,6 @@ export default function SectionAnalytics() {
             const seconds = Math.round((Date.now() - enteredAt) / 1000);
             if (seconds >= 2) {
               track("Section Time", { section: id, seconds });
-              timesRef.current[id] = (timesRef.current[id] || 0) + seconds;
             }
             enteredAt = 0;
           }

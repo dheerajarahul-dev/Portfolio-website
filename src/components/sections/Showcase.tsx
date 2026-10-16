@@ -15,13 +15,13 @@ export default function Showcase() {
   const poster = youtubeThumbnail(section.youtubeVideoId, "max");
 
   return (
-    <section id="showcase" className="px-3 py-14 sm:px-5 sm:py-20 lg:px-6">
+    <section id="showcase" className="px-3 py-10 sm:px-5 sm:py-20 lg:px-6">
       <div className="mx-auto grid max-w-[100rem] gap-6 sm:gap-10 lg:grid-cols-[1.4fr_0.9fr]">
         <AmbientMediaFrame
           thumbnailUrl={poster}
           className="overflow-hidden rounded-2xl border border-white/10 sm:rounded-[2rem]"
         >
-          <div className="relative aspect-video w-full">
+          <div className="relative aspect-[4/3] w-full sm:aspect-video">
             <iframe
               src={embedSrc}
               title="Showcase"

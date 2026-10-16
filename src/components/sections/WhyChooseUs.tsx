@@ -11,7 +11,7 @@ export default function WhyChooseUs() {
   const section = content.whyChooseUs;
 
   return (
-    <section id="why-us" className="px-3 py-14 sm:px-5 sm:py-20 lg:px-6">
+    <section id="why-us" className="px-3 py-10 sm:px-5 sm:py-20 lg:px-6">
       <div className="mx-auto max-w-[100rem]">
         <motion.div
           initial={false}
@@ -27,13 +27,13 @@ export default function WhyChooseUs() {
           </h2>
         </motion.div>
 
-        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-6 md:grid-cols-3">
           {section.items.map((item, index) => {
             const Icon = getIcon(item.icon);
             return (
               <SmoothCard
                 key={item.title}
-                className="glass-panel rounded-2xl border border-white/10 bg-[#111111]/80 p-5 sm:rounded-[2rem] sm:p-8"
+                className="glass-panel rounded-xl border border-white/10 bg-[#111111]/80 p-3 last:col-span-2 md:last:col-span-1 sm:rounded-[2rem] sm:p-8"
               >
                 <motion.div
                   initial={false}
@@ -41,15 +41,15 @@ export default function WhyChooseUs() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Icon size={24} className="mb-4 text-purple-300 sm:mb-6" />
-                  <h3 className="mb-2 text-xl font-semibold text-white sm:mb-3 sm:text-2xl">
+                  <Icon size={19} className="mb-2 text-purple-300 sm:mb-6 sm:h-6 sm:w-6" />
+                  <h3 className="mb-1 text-sm font-semibold leading-5 text-white sm:mb-3 sm:text-2xl sm:leading-normal">
                     <EditableText
                       path={`whyChooseUs.items.${index}.title`}
                       value={item.title}
                       as="span"
                     />
                   </h3>
-                  <p className="text-sm leading-6 text-white/70 sm:leading-7">
+                  <p className="text-xs leading-5 text-white/70 sm:text-sm sm:leading-7">
                     <EditableText
                       path={`whyChooseUs.items.${index}.description`}
                       value={item.description}

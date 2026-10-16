@@ -1,0 +1,650 @@
+CREATIVEXCREATIONS PROJECT DOCUMENTATION
+Last updated: 2026-10-14
+
+This file documents the actual project in:
+D:\CREATIVE X CREATIONS\portfolio web
+
+It intentionally does not include passwords, service-role keys, or private tokens.
+
+
+A. PROJECT OVERVIEW
+
+CreativeXCreations is a premium video-editing portfolio and service website. The public site presents cinematic editing services, featured work, a media library, pricing, About content, contact channels, and a contact inquiry form.
+
+The admin dashboard is a built-in content management system. It lets an authenticated admin update page content, media records, thumbnails, publishing state, featured media, pricing text, About content, contact channels, and inbox messages.
+
+Main public features:
+- Home page with hero, stats, Media Library-driven featured work, why-us, showcase, pricing, About, and contact sections.
+- Public Library page at /library that displays published media only.
+- Dedicated player page at /player for YouTube, Google Drive preview links, direct video URLs, and uploaded MP4/WebM files.
+- Contact form that stores submissions in the inbox.
+- Responsive navigation with Library first.
+- Adobe Premiere Pro, Adobe After Effects, and CapCut logos in the About section.
+
+Technology stack and installed versions from package.json:
+- Next.js 16.2.6, App Router.
+- React 19.2.4 and React DOM 19.2.4.
+- TypeScript 5.
+- Tailwind CSS 4 through @tailwindcss/postcss.
+- Framer Motion 12.39.0.
+- lucide-react 1.16.0.
+- ESLint 9 with eslint-config-next 16.2.6.
+
+
+B. HOW THE WEBSITE WAS BUILT
+
+Architecture:
+- Next.js App Router lives in src/app.
+- Server pages read site content through src/lib/storage.ts and pass it into client components.
+- Most visual sections are React client components in src/components/sections.
+- Shared state for content and inline edit mode is provided by src/context/SiteContentContext.tsx.
+- The admin dashboard is a client component at src/app/admin/page.tsx.
+- API routes are implemented as App Router route handlers under src/app/api.
+
+Styling:
+- Global styles live in src/app/globals.css.
+- Tailwind CSS classes are used throughout components.
+- The design is dark, cinematic, and compact in admin.
+- Framer Motion is used for public section animation.
+- lucide-react provides icons.
+
+Data fetching:
+- The home page src/app/page.tsx calls readContent() and renders HomePageClient.
+- The Library page src/app/library/page.tsx calls readContent() and renders MediaLibraryPageClient.
+- The Player page src/app/player/page.tsx calls readContent() and uses query-string videoUrl and title values.
+- The admin dashboard fetches /api/content and /api/messages after a valid session check.
+
+CMS and persistence:
+- src/lib/storage.ts is the data-access layer.
+- In local development, when no hosted storage is configured, content is read from data/site-content.json and messages from data/messages.json.
+- Local JSON writes are queued, written through a temporary file, renamed atomically, and backed up in data/backups.
+- In hosted/serverless production, the intended provider is Supabase. The code uses Supabase REST for content, messages, and admin accounts, and Supabase Storage for uploaded files.
+- Netlify/serverless deployments must not rely on runtime writes to data/*.json or public/uploads.
+
+Authentication:
+- The initial owner username defaults to dheeraj_a; ADMIN_PASSWORD is used to bootstrap an empty account store.
+- Accounts use salted scrypt password hashes, signed eight-hour httpOnly cxc_admin sessions, roles, and per-account permissions.
+- Local account records use data/admin-users.json; hosted records use the Supabase admin_users table.
+- Authorized owners manage accounts in the Accounts tab. Password hashes are never returned to the browser.
+- API routes enforce permissions server-side. Login attempts are throttled locally by src/app/api/admin/login/route.ts.
+
+Media upload flow:
+- Hosted FileUploadField requests a signed URL from /api/upload/sign and sends media directly to Supabase Storage to avoid Netlify function payload limits.
+- Uploads are limited to 100 MB and allow-listed image/video types. Local development uses /api/upload and stores files in public/uploads.
+- The public Supabase bucket defaults to cxc-media; configure it to allow at least 100 MB.
+- The admin editor stores the returned URL in the media record and saves metadata through /api/content.
+
+Netlify:
+- netlify.toml sets build command npm run build and publish directory .next.
+- Configure ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_SESSION_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_STORAGE_BUCKET in Netlify.
+- Production persistence requires site_content, contact_messages, and admin_users tables plus the public cxc-media bucket. Configure the bucket's maximum file size to at least 100 MB.
+- Hosted CMS reads refresh after three seconds. Contact messages are retained until restored or moved between inbox and recycle bin; inbox actions do not purge them.
+- Without hosted storage, serverless writes are blocked unless ALLOW_LOCAL_JSON_STORAGE=true is explicitly set; do not enable this for production.
+
+
+C. FULL PROJECT DIRECTORY MAP
+
+Important files and directories:
+
+package.json
+  Defines scripts and dependencies. Scripts are dev, build, start, and lint.
+
+package-lock.json
+  Locks npm dependency versions.
+
+next.config.ts
+  Next.js configuration. Sets image remote patterns for YouTube thumbnails, Unsplash, and Supabase public asset URLs. Adds security headers.
+
+netlify.toml
+  Netlify build settings. Build command is npm run build; publish directory is .next.
+
+tsconfig.json
+  TypeScript configuration.
+
+eslint.config.mjs
+  ESLint configuration.
+
+.env.example
+  Safe placeholder environment variables. Does not contain secrets.
+
+.gitignore
+  Excludes node_modules, .next, logs, .env files, tsbuildinfo, runtime uploads except public/uploads/.gitkeep, and data/.login-throttle.json.
+
+data/site-content.json
+  Local development content store. Contains metadata, navbar, hero, featured-work copy, mediaLibrary, About, pricing, contact, and other page content.
+
+data/messages.json
+  Local development inbox store for contact submissions.
+
+data/backups/
+  Local timestamped JSON backups created before local JSON writes.
+
+public/assets/logo.png
+  CreativeXCreations full/static logo asset.
+
+public/assets/logo-icon.png
+  CreativeXCreations icon asset used for browser/app icon metadata.
+
+public/assets/logos/premiere-pro.svg
+  Supplied Adobe Premiere Pro logo used by the About section.
+
+public/assets/logos/after-effects.svg
+  Supplied Adobe After Effects logo used by the About section.
+
+public/assets/logos/capcut.svg
+  Supplied CapCut logo used by the About section.
+
+public/uploads/.gitkeep
+  Keeps the local uploads folder in Git. Actual uploaded files are ignored.
+
+src/app/layout.tsx
+  Root layout, fonts, metadata, OpenGraph metadata, icon metadata, and global body wrapper.
+
+src/app/page.tsx
+  Public homepage server page. Reads content and starts inline edit mode if ?edit=1 is used.
+
+src/app/library/page.tsx
+  Public Library server page. Reads content and renders only published media in the client.
+
+src/app/player/page.tsx
+  Public player server page. Reads content and passes videoUrl/title query params to the player client.
+
+src/app/admin/page.tsx
+  Admin dashboard. Handles login UI, dashboard navigation, overview cards, media library management, content editing, pricing, About fields, contact settings, messages, and save actions.
+
+src/app/error.tsx
+  App-level error boundary with retry and home actions.
+
+src/app/not-found.tsx
+  404 page.
+
+src/app/icon.png
+  App Router file-based icon. This file matches public/assets/logo-icon.png.
+
+src/app/api/admin/login/route.ts
+  POST login and DELETE logout. Sets/deletes the cxc_admin cookie and throttles failed attempts.
+
+src/app/api/admin/session/route.ts
+  GET route that reports whether the request is authenticated.
+
+src/app/api/content/route.ts
+  GET returns content. PUT requires admin auth, saves content, and revalidates / and /library.
+
+src/app/api/upload/route.ts
+  POST admin-only upload endpoint. Validates file type, extension, size, and calls uploadAsset().
+
+src/app/api/contact/route.ts
+  POST public contact form endpoint. Validates fields and stores a message through appendMessage().
+
+src/app/api/messages/route.ts
+  GET/PATCH/DELETE admin-only inbox endpoint.
+
+src/components/HomePageClient.tsx
+  Wraps public page sections in SiteContentProvider and renders the public homepage.
+
+src/components/Navbar.tsx
+  Header/navigation. Uses content.navbar links. Library is first in stored navbar data.
+
+src/components/MediaLibraryPageClient.tsx
+  Public Library UI. Filters published media, supports search/category/type filters, opens videos in /player, and opens photos in a viewer.
+
+src/components/player/PlayerPageClient.tsx
+  Player UI. Supports YouTube embeds, Google Drive preview iframes, direct/uploaded video files, and unsupported-format messaging.
+
+src/components/sections/Hero.tsx
+  Home hero section.
+
+src/components/sections/FeaturedWork.tsx
+  Home featured work section. Uses only published videos selected as Home, with one main tile and up to eight small tiles.
+
+src/components/sections/About.tsx
+  About section. Uses CMS text plus supplied Premiere Pro, After Effects, and CapCut SVG assets.
+
+src/components/sections/Pricing.tsx
+  Pricing section. Reads pricing plans from content.pricing and supports inline editing.
+
+src/components/sections/Contact.tsx
+  Contact text, direct channels, and public inquiry form.
+
+src/components/admin/FileUploadField.tsx
+  Admin upload widget used by media and image fields.
+
+src/components/admin/VideoPlayerPreview.tsx
+  Admin preview component for video records.
+
+src/components/edit/EditableText.tsx, EditableImage.tsx, and EditableSurface.tsx
+  Inline text/image editing, selection, dragging, and resizing used by the public page edit mode.
+
+src/components/edit/EditModeBar.tsx
+  Save/edit controls for live inline editing.
+
+src/components/ui/VideoPreviewCard.tsx
+  Featured Work video card. Supports saved thumbnail crop positioning.
+
+src/context/SiteContentContext.tsx
+  Client content state, inline edit mode, content path updates, insert/remove helpers, and saveContent().
+
+src/lib/storage.ts
+  Main persistence layer for content, messages, uploads, backups, Supabase REST, and Supabase Storage.
+
+src/lib/auth.ts
+  Admin password and cookie-token utilities.
+
+src/lib/types.ts
+  Shared TypeScript data shapes.
+
+src/lib/default-content.ts
+  Default content used when no saved content exists.
+
+src/lib/media.ts
+  YouTube, Google Drive, direct video, and media helper functions.
+
+src/lib/youtube.ts
+  YouTube ID extraction and embed URL helper.
+
+src/lib/content-path.ts
+  Generic helpers for inline CMS path updates.
+
+src/lib/geo.ts and src/hooks/useGeoLocation.ts
+  Region/pricing helper used by Pricing.
+
+src/components/Analytics.tsx
+  Optional Plausible and Google Analytics integration through NEXT_PUBLIC_* variables.
+
+
+D. ADMIN EDITING GUIDE
+
+Open admin:
+1. Start the site locally with npm.cmd run dev.
+2. Visit http://localhost:3000/admin.
+3. Enter the configured ADMIN_PASSWORD.
+
+Edit homepage content:
+1. Open Admin, then Homepage.
+2. Edit metadata, hero lines, subheading, YouTube hero URL, and navbar logo.
+3. Click Save Changes.
+4. Verify on / after refresh.
+
+Add a video:
+1. Open Admin, then Media Library.
+2. Click Add Media.
+3. Set Media type to Video.
+4. Choose source type: YouTube URL, Google Drive URL, Uploaded file, or Direct URL.
+5. Upload MP4/WebM or paste a supported URL.
+6. Add title, description, category, thumbnail, status, and featured setting.
+7. Click Save Changes.
+8. If Published is enabled, verify it appears in /library.
+9. If Featured on homepage is enabled, verify it appears in Featured Work on /.
+
+Add an image:
+1. Open Media Library.
+2. Click Add Media.
+3. Set Media type to Image.
+4. Upload an image or paste an image URL.
+5. Add metadata and publish status.
+6. Save and verify in /library.
+
+Change media title and description:
+1. Open Media Library.
+2. Click the thumbnail, title, or pencil edit button.
+3. Edit Basic Information.
+4. Save and refresh /library.
+
+Replace or crop a thumbnail:
+1. Open a media item in the Media Library editor.
+2. Upload or paste a thumbnail URL.
+3. Use Horizontal, Vertical, and Zoom sliders in Crop / reposition.
+4. Save Changes.
+5. The crop configuration is saved in the media record and used by public Library and featured cards.
+6. Closing/cancelling the editor preserves the previous saved thumbnail and crop.
+
+Publish/unpublish media:
+1. Open a media item.
+2. Toggle Published.
+3. Save.
+4. Published media appears in /library; drafts do not.
+
+Feature media on homepage:
+1. Open a video media item.
+2. Toggle Featured on homepage.
+3. Ensure Published is also enabled.
+4. Save.
+5. The home Featured Work section uses published featured media videos. If none exist, it falls back to the legacy Portfolio list.
+
+Edit About and Pricing:
+1. About fields are under About & Sections.
+2. Pricing plans are under Pricing.
+3. Save Changes after editing.
+4. Verify on the public homepage.
+
+Manage messages:
+1. Open Messages.
+2. Search/filter messages.
+3. Open a message row to read its full content.
+4. Mark read/unread, delete, or use Reply via Gmail.
+
+Website settings:
+- Public content, including contact form copy, is edited in the admin Edit Site tab or through the live editor.
+- Admin Settings is reserved for authentication and deployment security guidance.
+
+
+E. MEDIA UPLOAD AND STORAGE LOCATIONS
+
+Local development:
+- Content metadata: data/site-content.json.
+- Contact messages: data/messages.json.
+- Backups: data/backups/*.json.
+- Uploaded files: public/uploads/<sanitized-file-name>.
+- public/uploads files are ignored by Git except .gitkeep.
+
+Production/Netlify intended storage:
+- Content metadata: Supabase table public.site_content.
+- Contact messages: Supabase table public.contact_messages.
+- Uploaded images/videos/thumbnails: Supabase Storage bucket from SUPABASE_STORAGE_BUCKET, default cxc-media.
+- Stored media records contain the resulting public URL, type, title, description, category, sourceType, thumbnailUrl, crop config, published, featured, altText, and createdAt.
+
+Supabase table shapes expected by code:
+- site_content: id text primary key, content json/jsonb, updated_at timestamp.
+- contact_messages: id uuid/text, name, email, subject, project_type, message, created_at, read, deleted_at.
+
+How public URLs are generated:
+- Local uploads return /uploads/<filename>.
+- Hosted uploads return {SUPABASE_URL}/storage/v1/object/public/{bucket}/{objectPath}.
+
+Thumbnail crops:
+- Crop is stored as numeric x, y, and scale on each mediaLibrary item.
+- The app stores crop configuration, not a newly rendered cropped bitmap.
+- Public Library and homepage featured cards use that crop configuration when rendering thumbnails.
+
+Google Drive and YouTube:
+- YouTube URLs are stored as mediaUrl and thumbnails can be auto-filled from img.youtube.com.
+- Google Drive URLs are converted to preview iframe URLs in the player.
+- No Cloudinary or Vimeo integration exists in the current codebase.
+
+Production warning:
+- data/*.json and public/uploads are useful locally but are not durable storage on Netlify.
+- Configure Supabase before treating production admin saves/uploads as persistent.
+
+
+F. API AND DATA FLOW REFERENCE
+
+GET /api/admin/session
+- Auth: no password body, reads cookie.
+- Returns: { authenticated: boolean }.
+
+POST /api/admin/login
+- Auth: public route, validates password from JSON body.
+- Input: { password: string }.
+- Success: sets httpOnly cxc_admin cookie and returns { success: true }.
+- Errors: 401 invalid password, 429 too many attempts, 503 admin password missing, 400 invalid request.
+
+DELETE /api/admin/login
+- Auth: cookie not required.
+- Clears cxc_admin cookie.
+
+GET /api/content
+- Auth: public.
+- Reads content through readContent().
+- Returns full content JSON.
+- Errors: 503 if content cannot be read.
+
+PUT /api/content
+- Auth: admin required.
+- Input: full or partial SiteContent-shaped JSON object.
+- Writes through writeContent().
+- Revalidates / and /library.
+- Returns { success: true, content }.
+- Errors: 401 unauthorized, 400 invalid content, 500 failed save/storage config.
+
+POST /api/upload
+- Auth: admin required.
+- Input: multipart/form-data with file.
+- Accepts: image/jpeg, image/png, image/webp, image/gif, video/mp4, video/webm.
+- Max size: 8 MB.
+- Validates extension allowlist.
+- Writes via uploadAsset().
+- Returns { url, type }.
+- Errors: 401 unauthorized, 400 missing/invalid/too-large file, 500 upload failed.
+
+POST /api/contact
+- Auth: public.
+- Input: JSON name, email, subject, projectType, message.
+- Validates required fields, lengths, and email format.
+- Writes through appendMessage().
+- Returns { success: true, id }.
+- Errors: 400 validation errors, 500 storage failure.
+
+GET /api/messages
+- Auth: admin required.
+- Returns messages from readMessages().
+
+PATCH /api/messages
+- Auth: admin required.
+- Input: { id, read }.
+- Updates read status.
+- Errors: 400 missing id, 404 not found, 500 update failed.
+
+DELETE /api/messages?id=<id>
+- Auth: admin required.
+- Deletes a message.
+- Errors: 400 missing id, 404 not found, 500 delete failed.
+
+
+G. ENVIRONMENT VARIABLES
+
+ADMIN_PASSWORD
+- Required for admin login.
+- Server-only.
+- If missing, admin login is disabled.
+
+NEXT_PUBLIC_SITE_URL
+- Recommended for production.
+- Used in metadata/OpenGraph URL generation.
+- Safe to expose because it is NEXT_PUBLIC.
+
+SUPABASE_URL
+- Required for production/serverless CMS persistence.
+- Server-side use in src/lib/storage.ts.
+- Example placeholder: https://your-project.supabase.co
+
+SUPABASE_SERVICE_ROLE_KEY
+- Required for production/serverless CMS persistence.
+- Server-side only. Never expose as NEXT_PUBLIC.
+- Used for Supabase REST and Storage writes.
+
+SUPABASE_STORAGE_BUCKET
+- Optional but recommended for hosted uploads.
+- Defaults to cxc-media.
+
+CMS_STORAGE_PROVIDER
+- Optional.
+- Set to supabase to force hosted mode.
+
+ALLOW_LOCAL_JSON_STORAGE
+- Optional, development/testing only.
+- If true, permits local JSON writes even in a serverless-like environment.
+- Do not use as a production persistence strategy.
+
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN
+- Optional analytics domain.
+
+NEXT_PUBLIC_GA_ID
+- Optional Google Analytics 4 ID.
+
+NODE_ENV
+- Set by build/runtime tooling.
+- Used to decide whether auth cookie is secure.
+
+NETLIFY, VERCEL, AWS_LAMBDA_FUNCTION_NAME
+- Runtime environment flags read by storage.ts to detect serverless mode.
+
+
+H. LOCAL DEVELOPMENT
+
+Install dependencies:
+1. Install Node.js LTS.
+2. Run npm.cmd install in PowerShell from the project root.
+
+Configure environment:
+1. Copy .env.example to .env.local.
+2. Set ADMIN_PASSWORD.
+3. Set NEXT_PUBLIC_SITE_URL=http://localhost:3000.
+4. Supabase variables are optional for local JSON development.
+
+Run development server:
+- npm.cmd run dev
+- The existing dev server may already be on http://localhost:3000.
+
+Run checks:
+- npm.cmd run lint
+- npx.cmd tsc --noEmit
+- npm.cmd test --if-present
+- npm.cmd run build
+
+PowerShell notes:
+- Use npm.cmd instead of npm if script execution policy blocks npm.ps1.
+
+Common local issues:
+- Admin login fails: check ADMIN_PASSWORD and clear old cookies.
+- Upload fails: ensure logged in and file is under 8 MB with allowed type/extension.
+- Content does not save: check /api/content response and storage mode.
+- Port already in use: another Next dev server is running; use the existing URL or stop that process.
+
+
+I. PRODUCTION DEPLOYMENT ON NETLIFY
+
+Build settings:
+- Build command: npm run build.
+- Publish directory: .next.
+- Framework: Next.js.
+
+Required Netlify environment variables:
+- ADMIN_PASSWORD
+- NEXT_PUBLIC_SITE_URL
+- CMS_STORAGE_PROVIDER=supabase
+- SUPABASE_URL
+- SUPABASE_SERVICE_ROLE_KEY
+- SUPABASE_STORAGE_BUCKET, or use default cxc-media.
+
+Supabase setup:
+1. Create table public.site_content with id primary key, content jsonb, updated_at timestamptz.
+2. Create table public.contact_messages with columns documented above.
+3. Create a public storage bucket named cxc-media, or set SUPABASE_STORAGE_BUCKET to another public bucket.
+4. Ensure the service-role key is available only to Netlify functions/server code.
+
+Deployment verification:
+1. Deploy to Netlify.
+2. Open the public home page.
+3. Log in to /admin.
+4. Save a harmless content change and verify it appears publicly.
+5. Upload a small image and verify the returned URL is a Supabase public URL.
+6. Publish a test media item and verify /library shows it.
+7. Redeploy and verify the content/media remain available.
+
+
+J. BACKUP AND RECOVERY
+
+Current local backup capability:
+- Before local JSON writes, storage.ts copies the current JSON file to data/backups.
+- It keeps up to 20 backups per JSON file.
+
+Supabase backup:
+- Use Supabase dashboard or CLI backups/exports for site_content and contact_messages.
+- Back up the Supabase Storage bucket separately.
+
+Recovery examples:
+- Failed content save: check admin error, inspect server logs, restore from latest data/backups locally or Supabase backup in production.
+- Accidentally unpublished item: open admin Media Library, edit item, set Published, save.
+- Missing thumbnail: open item, upload/paste a valid thumbnail URL, save.
+- Failed upload: retry with allowed file type under 8 MB; check Supabase bucket and env vars in production.
+- Deployment problem: inspect Netlify build logs, verify env vars, run npm.cmd run build locally.
+- Migration issue: do not delete production tables; export data first, then apply schema changes carefully.
+
+
+K. TROUBLESHOOTING
+
+Upload fails:
+- Not logged in, unsupported MIME type, unsupported extension, file over 8 MB, missing Supabase variables, or bucket not public/configured.
+- Check /api/upload response and Netlify function logs.
+
+Content saves in admin but does not update publicly:
+- Check /api/content PUT response.
+- Confirm production uses Supabase, not local JSON.
+- Confirm / and /library revalidation occurred.
+- Hard refresh the public page.
+
+Images fail after deployment:
+- Local /uploads files were not deployed or are not durable.
+- Use Supabase Storage for production uploads.
+- Confirm next.config.ts allows the remote image hostname.
+
+Video URL does not work:
+- YouTube URL may not parse.
+- Google Drive URL may not be a supported file preview URL.
+- Direct video URL may not be accessible by the browser.
+- Use the Player page and browser network tools to inspect failures.
+
+Admin authentication fails:
+- ADMIN_PASSWORD missing or wrong.
+- Too many failed attempts caused a temporary lockout.
+- Clear cookies or wait for lockout expiry.
+
+Environment variables missing:
+- /api/admin/login may return 503 if ADMIN_PASSWORD is missing.
+- /api/content or /api/upload may return storage errors if Supabase is required but not configured.
+
+Netlify functions fail:
+- Inspect Netlify function logs.
+- Confirm Supabase URL/key/bucket variables are set.
+- Confirm no code depends on durable local filesystem writes.
+
+Build fails:
+- Run npm.cmd run lint, npx.cmd tsc --noEmit, and npm.cmd run build locally.
+- Check Next.js 16 App Router conventions in node_modules/next/dist/docs if editing routes or metadata.
+
+Data appears locally but not production:
+- Local uses data/*.json and public/uploads.
+- Production should use Supabase. Move or recreate data in Supabase before expecting production persistence.
+
+
+L. PROJECT STATUS AND REMAINING WORK
+
+Verified working locally in this session:
+- TypeScript check: npx.cmd tsc --noEmit passed.
+- Lint: npm.cmd run lint passed in the previous verification pass.
+- Production build: npm.cmd run build passed in the previous verification pass.
+- Existing dev server responded at http://localhost:3000/admin with HTTP 200 in the previous verification pass.
+- Supplied software logo assets exist and are referenced by About.tsx.
+- Browser/app icon uses the supplied CreativeX icon asset.
+- Authenticated local API smoke test previously passed for login, content read, content save, and image upload.
+
+Additional integration completed:
+- Public Library filters mediaLibrary items by published status.
+- Home Featured Work now uses published Media Library videos marked featured, with legacy featuredWork items as fallback.
+- Media crop configuration is preserved by storage normalization.
+- Media editor validates common invalid media URLs before saving.
+
+Tested only locally:
+- Local JSON content persistence.
+- Local upload route using public/uploads.
+- Admin dashboard UI and API flow.
+
+Not verified against production services in this session:
+- Supabase REST table writes.
+- Supabase Storage uploads.
+- Netlify deployed functions.
+- Persistence after a real Netlify redeploy.
+
+Required manual production configuration:
+- Set ADMIN_PASSWORD in Netlify.
+- Set NEXT_PUBLIC_SITE_URL to the final site URL.
+- Create Supabase tables and storage bucket.
+- Set SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, CMS_STORAGE_PROVIDER=supabase, and optionally SUPABASE_STORAGE_BUCKET.
+
+Known limitations:
+- Upload limit is 8 MB.
+- Thumbnail cropping stores crop config rather than creating a new cropped image file.
+- The homepage only displays published video media records marked Featured in the Media Library.
+- No Cloudinary or Vimeo provider is implemented.
+- Production upload and CMS persistence are only production-ready after Supabase variables and schema are configured.
+

@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { Play } from "lucide-react";
-import type { SiteContent } from "@/lib/types";
+import type { MediaLibraryItem } from "@/lib/types";
+import { getMediaThumbnailUrl } from "@/lib/media";
 import AmbientMediaFrame from "./AmbientMediaFrame";
 
 type VideoPreviewCardProps = {
-  item: SiteContent["videoSection"]["items"][0] | SiteContent["featuredWork"]["items"][0];
+  item: MediaLibraryItem;
   onOpen: () => void;
   className?: string;
   isFeatured?: boolean;
@@ -18,58 +18,56 @@ export default function VideoPreviewCard({
   className = "",
   isFeatured = false,
 }: VideoPreviewCardProps) {
+  const thumbnailUrl = getMediaThumbnailUrl(item);
+  const crop = item.crop;
+  const imageStyle = crop
+    ? {
+        objectPosition: `${crop.x}% ${crop.y}%`,
+        transform: `scale(${crop.scale})`,
+      }
+    : undefined;
+
   return (
     <button
       type="button"
       onClick={onOpen}
-      className={`group relative block w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#111]/90 text-left transition hover:border-purple-500/40 focus:outline-none focus:ring-2 focus:ring-purple-500/30 cursor-pointer ${className}`}
+      className={`glass-liquid group relative flex w-full flex-col items-stretch justify-start overflow-hidden rounded-[1.5rem] text-left transition duration-300 ease-out hover:border-white/35 focus:outline-none focus:ring-2 focus:ring-lime-300/50 cursor-pointer ${className}`}
       aria-label={`Open video ${item.title}`}
+      style={{ transform: "translateZ(0)" }}
     >
-      <div className={`relative ${isFeatured ? "aspect-[4/3]" : "aspect-[16/10]"} w-full overflow-hidden bg-black`}>
-        <AmbientMediaFrame thumbnailUrl={item.thumbnailUrl} className="h-full w-full">
+      <div className={`relative w-full overflow-hidden bg-black ${isFeatured ? "aspect-square shrink-0 lg:aspect-auto lg:min-h-0 lg:flex-1" : "aspect-square shrink-0"}`}>
+        <AmbientMediaFrame thumbnailUrl={thumbnailUrl} className="h-full w-full">
           <div className="absolute inset-0 bg-black/10 transition duration-500 group-hover:bg-black/20" />
-          {item.thumbnailUrl ? (
+          {thumbnailUrl ? (
             <Image
-              src={item.thumbnailUrl}
+              src={thumbnailUrl}
               alt={item.title}
               fill
               sizes={isFeatured ? "(min-width: 768px) 66vw, 100vw" : "(min-width: 768px) 33vw, 100vw"}
               className="object-cover transition duration-500 group-hover:scale-105"
+              style={imageStyle}
             />
           ) : (
             <div className="h-full w-full bg-[#111]" />
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20 pointer-events-none" />
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/65 text-white shadow-xl transition-transform duration-300 group-hover:scale-110">
-              <Play size={22} />
-            </span>
-          </div>
-          <div className="pointer-events-none absolute inset-x-4 top-4 flex items-center justify-between text-xs text-white/80">
-            <span className="rounded-full bg-black/70 px-3 py-1 uppercase tracking-[0.35em] text-white/90">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20" />
+          <div className={`pointer-events-none absolute flex items-center justify-between text-white/80 ${isFeatured ? "inset-x-4 top-4" : "inset-x-2 top-2"}`}>
+            <span className={`max-w-full truncate rounded-full bg-black/70 uppercase text-white/90 ${isFeatured ? "px-2.5 py-1 text-[10px] tracking-[0.2em] sm:px-3 sm:text-xs" : "px-1.5 py-0.5 text-[8px] tracking-[0.12em] sm:px-2 sm:text-[9px]"}`}>
               {item.category}
-            </span>
-            <span className="hidden rounded-full bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-white/80 md:block">
-              Tap to play
             </span>
           </div>
         </AmbientMediaFrame>
       </div>
 
-      <div className="space-y-4 p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h3 className={`font-semibold text-white ${isFeatured ? "text-2xl md:text-3xl" : "text-xl"}`}>
-              {item.title}
-            </h3>
-            {item.description ? (
-              <p className="mt-2 text-sm leading-6 text-white/70 line-clamp-3">{item.description}</p>
-            ) : null}
-          </div>
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-600/95 text-white shadow-lg transition duration-300 group-hover:scale-105">
-            <Play size={20} />
-          </span>
+      <div className={`shrink-0 p-2.5 sm:p-3 ${isFeatured ? "" : "mt-auto"}`}>
+        <div className="min-w-0">
+          <h3 className={`line-clamp-2 font-semibold text-white ${isFeatured ? "text-lg leading-6 sm:text-xl" : "min-h-9 text-[13px] leading-[1.125rem] sm:text-sm"}`}>
+            {item.title}
+          </h3>
+          {isFeatured && item.description && (
+            <p className="mt-2 text-sm leading-6 text-white/70 line-clamp-3">{item.description}</p>
+          )}
         </div>
       </div>
     </button>

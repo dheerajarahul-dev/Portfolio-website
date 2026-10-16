@@ -6,7 +6,12 @@
   "navbar": {
     "brandName": "CREATIVEXCREATIONS",
     "logoUrl": "/logo.png",
+    "contactLabel": "Contact Us",
     "links": [
+      {
+        "name": "Library",
+        "href": "/library"
+      },
       {
         "name": "Work",
         "href": "#work"
@@ -30,6 +35,9 @@
     "line2": "what you expected?",
     "punchline": "We got you.",
     "subheading": "High-retention cinematic edits designed to keep viewers watching, boost viewer retention, and convert traffic into core brand advocates.",
+    "ctaWork": "Explore Work",
+    "ctaReel": "Play 2026 Demo Reel",
+    "ctaContact": "Contact Us",
     "youtubeVideoId": "M7aVS1DNa-Q"
   },
   "stats": {
@@ -60,23 +68,7 @@
   },
   "featuredWork": {
     "eyebrow": "Featured work",
-    "title": "Cinematic edits that move audiences and drive retention.",
-    "items": [
-      {
-        "id": "2",
-        "title": "Cinematic Opener",
-        "category": "Brand Intro",
-        "thumbnailUrl": "/assets/thumbnail2.png",
-        "videoUrl": "/assets/podcast-intro.mp4"
-      },
-      {
-        "id": "3",
-        "title": "Documentary style",
-        "category": "Documentary Reel",
-        "thumbnailUrl": "/assets/logo.png",
-        "videoUrl": "/assets/documentary.mp4"
-      }
-    ]
+    "title": "Cinematic edits that move audiences and drive retention."
   },
   "whyChooseUs": {
     "eyebrow": "Why creators choose us",
@@ -110,10 +102,16 @@
     "pacingText": "Fast opening hooks, clear mid-sequence payoffs, and a powerful ending that anchors the brand identity in the viewer's mind."
   },
   "player": {
-    "title": "Dedicated player experience",
+    "title": "",
     "description": "A focused playback space with branded visuals, controls, and a clean layout optimized for every edit.",
     "backgroundUrl": "",
     "accentColor": "#7C3AED"
+  },
+  "founder": {
+    "name": "Dheeraj A",
+    "role": "Founder & Creative Lead",
+    "photoUrl": "/uploads/1792135584414-logo_perfect_aspect_ratio_main_1000x1000.png",
+    "biography": "Dheeraj A is the founder of CreativeXCreations. He built the site as a home for his video-editing portfolio and services, spanning creator-focused social videos, documentary pieces, motion graphics, and cinematic showcases. The work presented here emphasizes clear storytelling, deliberate pacing, polished visuals, and platform-ready delivery. His stated focus is helping creators present ideas with stronger visual structure and audience retention."
   },
   "pricing": {
     "eyebrow": "Pricing",
@@ -150,7 +148,7 @@
       },
       {
         "title": "Thumbnail Design",
-        "price": "1500",
+        "price": "₹150",
         "priceUSD": 7,
         "description": "Eye-catching custom thumbnails designed to maximize click-through rates and viewer engagement.",
         "features": [
@@ -165,24 +163,73 @@
     ]
   },
   "customSections": [],
-  "videoSection": {
-    "eyebrow": "Video Library",
-    "title": "Watch our latest edits and case studies.",
-    "description": "Short previews, case details, and high-retention examples you can share with clients or collaborators.",
+  "mediaLibrary": {
+    "title": "Media Library",
+    "description": "A curated library of published work, visuals, and client-ready edits from the CreativeXCreations portfolio.",
     "items": [
       {
-        "id": "video-1",
-        "title": "Brand Promo Reel",
-        "category": "Social Video",
-        "thumbnailUrl": "https://img.youtube.com/vi/M7aVS1DNa-Q/hqdefault.jpg",
-        "videoUrl": "https://www.youtube.com/watch?v=M7aVS1DNa-Q"
+        "id": "8945f694-9b64-47f6-ba26-7708d9d5fd25",
+        "title": "Untitled media",
+        "description": "",
+        "category": "General",
+        "type": "video",
+        "sourceType": "drive",
+        "mediaUrl": "https://drive.google.com/file/d/1FkaGitIQ_1321Sl635NWG9UiLDCL5NjB/view?usp=sharing",
+        "thumbnailUrl": "https://drive.google.com/file/d/1FkaGitIQ_1321Sl635NWG9UiLDCL5NjB/view?usp=sharing",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "scale": 1.2
+        },
+        "published": true,
+        "featured": true,
+        "createdAt": "2026-10-15T19:55:52.613Z"
       },
       {
-        "id": "video-2",
-        "title": "Interview Highlight",
-        "category": "Documentary Cut",
+        "id": "library-video-1",
+        "title": "Brand Promo Reel",
+        "description": "A fast-paced promo designed for high relevance across reels and short-form publishing.",
+        "category": "Social Video",
+        "type": "video",
+        "sourceType": "youtube",
+        "mediaUrl": "https://www.youtube.com/watch?v=M7aVS1DNa-Q",
         "thumbnailUrl": "https://img.youtube.com/vi/M7aVS1DNa-Q/hqdefault.jpg",
-        "videoUrl": "https://www.youtube.com/watch?v=M7aVS1DNa-Q"
+        "crop": {
+          "x": 50,
+          "y": 42,
+          "scale": 1.15
+        },
+        "published": true,
+        "featured": true,
+        "createdAt": "2026-10-13T17:45:38.662Z",
+        "layout": {
+          "x": -14,
+          "y": -33,
+          "scale": 0.862
+        }
+      },
+      {
+        "id": "library-video-2",
+        "title": "Interview Highlight",
+        "description": "A polished interview cut with cinematic pacing and clear narrative payoff.",
+        "category": "Documentary",
+        "type": "video",
+        "sourceType": "youtube",
+        "mediaUrl": "https://www.youtube.com/watch?v=M7aVS1DNa-Q",
+        "thumbnailUrl": "https://img.youtube.com/vi/M7aVS1DNa-Q/hqdefault.jpg",
+        "crop": {
+          "x": 50,
+          "y": 42,
+          "scale": 1.1
+        },
+        "published": true,
+        "featured": true,
+        "createdAt": "2026-10-13T17:45:38.662Z",
+        "layout": {
+          "x": 381,
+          "y": -56,
+          "scale": 0.9179999999999999
+        }
       }
     ]
   },
@@ -194,17 +241,59 @@
     "tools": [
       "Premiere Pro",
       "After Effects",
-      "CapCut Pro"
+      "CapCut"
+    ],
+    "toolLogos": [
+      {
+        "label": "Adobe Premiere Pro",
+        "src": "/uploads/1791923962622-vecteezy_adobe-premiere-pro-cc-icon-app-logo-editable-transparent_66118556_-_Cop.png",
+        "alt": "Adobe Premiere Pro logo"
+      },
+      {
+        "label": "Adobe After Effects",
+        "src": "/uploads/1791923992083-vecteezy_adobe-after-effects-cc-icon-app-logo-editable-premium_65738851.jpg",
+        "alt": "Adobe After Effects logo"
+      },
+      {
+        "label": "CapCut",
+        "src": "/uploads/1791924011989-vecteezy_capcut-logo-on-transparent-white-background_13948546_-_Copy.jpg",
+        "alt": "CapCut logo"
+      }
     ],
     "summaryTitle": "Designed to feel premium and performance-ready.",
     "summaryText": "We help creators convert attention into action, using cinematic motion, meaningful captions, and fast technical delivery.",
-    "workflowText": "Adobe Premiere, After Effects,  CapCut options with consistent creative direction.",
+    "workflowText": "Adobe Premiere Pro, After Effects, and CapCut, with consistent creative direction.",
     "deliveryText": "Fast previews, clear revision rounds, and final export packages optimized for platforms and timelines."
   },
   "contact": {
     "badge": "Book a creative review",
     "title": "Start your next cinematic project.",
     "description": "Send the brief, share your creative direction, and we'll respond with the perfect edit strategy for your project.",
+    "directTitle": "Direct contact",
+    "directHeading": "Reach CreativeXCreations",
+    "directDescription": "Prefer to connect directly? Use one of the channels below.",
+    "channelAction": "Open",
+    "form": {
+      "nameLabel": "Name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "projectTypeLabel": "Project Type",
+      "projectTypes": [
+        "Short Form Edit",
+        "Long Form Edit",
+        "Motion Graphic & Infographic Edit",
+        "Consultation",
+        "Thumbnail Design",
+        "Other"
+      ],
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "Example: Launch teaser for my brand",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Tell us about your project",
+      "submitLabel": "Send Inquiry",
+      "successMessage": "Message sent! We’ll get back to you soon."
+    },
     "channels": [
       {
         "label": "Email",
@@ -222,5 +311,22 @@
         "href": "https://www.youtube.com/@creativexcreations"
       }
     ]
+  },
+  "editor": {
+    "elements": {
+      "about__toolLogos__1__src": {
+        "scale": 1.8
+      },
+      "about__toolLogos__2__src": {
+        "scale": 1.55
+      },
+      "about__toolLogos__0__src": {
+        "scale": 1.8
+      },
+      "hero__punchline": {
+        "letterSpacing": ""
+      }
+    },
+    "deletedSections": []
   }
 }

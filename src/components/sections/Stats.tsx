@@ -11,7 +11,7 @@ export default function Stats() {
   const section = content.stats;
 
   return (
-    <section className="relative overflow-hidden px-3 py-14 sm:px-5 sm:py-20 lg:px-6" id="trust">
+    <section className="relative overflow-hidden px-3 py-10 sm:px-5 sm:py-20 lg:px-6" id="trust">
       <div className="mx-auto max-w-[100rem]">
         <motion.div
           initial={false}
@@ -27,13 +27,13 @@ export default function Stats() {
           </h2>
         </motion.div>
 
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-5 xl:grid-cols-4">
           {section.items.map((item, index) => {
             const Icon = getIcon(item.icon);
             return (
               <SmoothCard
                 key={item.label}
-                className="glass-panel-glow rounded-2xl border border-white/10 bg-[#111111]/80 p-5 sm:rounded-3xl sm:p-8"
+                className="glass-panel-glow rounded-xl border border-white/10 bg-[#111111]/80 p-3 sm:rounded-3xl sm:p-8"
               >
                 <motion.div
                   initial={false}
@@ -41,15 +41,15 @@ export default function Stats() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.08 }}
                 >
-                  <Icon size={22} className="mb-4 text-purple-300 sm:mb-5" />
-                  <h3 className="mb-2 text-lg font-semibold text-white sm:mb-3 sm:text-xl">
+                  <Icon size={18} className="mb-2 text-purple-300 sm:mb-5 sm:h-[22px] sm:w-[22px]" />
+                  <h3 className="mb-1 text-sm font-semibold leading-5 text-white sm:mb-3 sm:text-xl sm:leading-normal">
                     <EditableText
                       path={`stats.items.${index}.label`}
                       value={item.label}
                       as="span"
                     />
                   </h3>
-                  <p className="text-sm leading-6 text-white/70 sm:leading-7">
+                  <p className="text-xs leading-5 text-white/70 sm:text-sm sm:leading-7">
                     <EditableText
                       path={`stats.items.${index}.description`}
                       value={item.description}

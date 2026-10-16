@@ -13,7 +13,7 @@ function getAtPath(obj: unknown, parts: string[]): unknown {
 
 function updateAtPath(obj: unknown, parts: string[], value: unknown): unknown {
   if (parts.length === 0) return value;
-  if (obj === null || obj === undefined) return obj;
+  if (obj === null || obj === undefined) obj = {};
 
   const [part, ...rest] = parts;
   const key = /^\d+$/.test(part) ? Number(part) : part;

@@ -15,6 +15,8 @@
 
 # next.js
 /.next/
+/.next-https/
+/.next-*/
 /out/
 
 # production
@@ -24,7 +26,8 @@
 .DS_Store
 *.pem
 
-# debug
+# debug / logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -43,3 +46,10 @@ next-env.d.ts
 # user uploads (keep folder)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# runtime throttle state
+/data/.login-throttle.json
+/data/admin-users.json
+/data/backups/*.json
+
+certificates
