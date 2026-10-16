@@ -17,8 +17,8 @@ export default async function PlayerPage({
 }: {
   searchParams: Promise<{ videoUrl?: string | string[]; title?: string | string[] }>;
 }) {
-  const content = await readContent();
   const params = await searchParams;
+  const content = await readContent();
   const videoUrl = Array.isArray(params.videoUrl)
     ? params.videoUrl[0]
     : params.videoUrl;

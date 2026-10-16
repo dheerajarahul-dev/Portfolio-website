@@ -15,7 +15,7 @@ const hasHostedStorageConfig = Boolean(
   process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 const allowLocalJsonFallback = process.env.ALLOW_LOCAL_JSON_STORAGE === "true";
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+const supabaseUrl = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabaseBucket = process.env.SUPABASE_STORAGE_BUCKET || "cxc-media";
 const MAX_ASSET_BYTES = 100 * 1024 * 1024;
@@ -46,6 +46,14 @@ function getSupabaseConfig(): { url: string; key: string } {
     throw new Error(
       "Supabase CMS storage is selected but SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are not both configured."
     );
+  }
+  try {
+    const parsedUrl = new URL(supabaseUrl);
+    if (!parsedUrl.hostname || !["http:", "https:"].includes(parsedUrl.protocol)) {
+      throw new Error();
+    }
+  } catch {
+    throw new Error("SUPABASE_URL must be a valid absolute HTTP(S) project URL.");
   }
   return { url: supabaseUrl, key: supabaseKey };
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { readContent } from "@/lib/storage";
+import { defaultContent } from "@/lib/default-content";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 15;
@@ -19,14 +20,22 @@ const inter = Inter({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await readContent();
+  let contentMetadata = defaultContent.metadata;
+  try {
+    contentMetadata = (await readContent()).metadata;
+  } catch (error) {
+    console.error(
+      "Failed to load CMS metadata; using defaults:",
+      error instanceof Error ? error.message : error
+    );
+  }
   const siteUrl = getSiteUrl();
   const ogImage = siteUrl ? `${siteUrl}/logo.png` : undefined;
 
   return {
     metadataBase: siteUrl ? new URL(siteUrl) : undefined,
-    title: content.metadata.title,
-    description: content.metadata.description,
+    title: contentMetadata.title,
+    description: contentMetadata.description,
     alternates: siteUrl ? { canonical: `${siteUrl}/` } : undefined,
     icons: {
       icon: "/assets/logo-icon.png",
@@ -34,8 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
       apple: "/assets/logo-icon.png",
     },
     openGraph: {
-      title: content.metadata.title,
-      description: content.metadata.description,
+      title: contentMetadata.title,
+      description: contentMetadata.description,
       ...(siteUrl ? { url: siteUrl } : {}),
       siteName: "CreativeXCreations",
       images: ogImage ? [
@@ -51,8 +60,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: content.metadata.title,
-      description: content.metadata.description,
+      title: contentMetadata.title,
+      description: contentMetadata.description,
       images: ogImage ? [ogImage] : undefined,
     },
   };
