@@ -71,13 +71,13 @@ Authentication:
 Media upload flow:
 - Hosted FileUploadField requests a signed URL from /api/upload/sign and sends media directly to Supabase Storage to avoid Netlify function payload limits.
 - Uploads are limited to 100 MB and allow-listed image/video types. Local development uses /api/upload and stores files in public/uploads.
-- The public Supabase bucket defaults to cxc-media; configure it to allow at least 100 MB.
+- The public Supabase bucket defaults to your configured storage bucket; configure it to allow at least 100 MB.
 - The admin editor stores the returned URL in the media record and saves metadata through /api/content.
 
 Netlify:
 - netlify.toml sets build command npm run build and publish directory .next.
 - Configure ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_SESSION_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_STORAGE_BUCKET in Netlify.
-- Production persistence requires site_content, contact_messages, and admin_users tables plus the public cxc-media bucket. Configure the bucket's maximum file size to at least 100 MB.
+- Production persistence requires site_content, contact_messages, and admin_users tables plus a public storage bucket. Configure the bucket's maximum file size to at least 100 MB.
 - Hosted CMS reads refresh after three seconds. Contact messages are retained until restored or moved between inbox and recycle bin; inbox actions do not purge them.
 - Without hosted storage, serverless writes are blocked unless ALLOW_LOCAL_JSON_STORAGE=true is explicitly set; do not enable this for production.
 
@@ -340,7 +340,7 @@ Local development:
 Production/Netlify intended storage:
 - Content metadata: Supabase table public.site_content.
 - Contact messages: Supabase table public.contact_messages.
-- Uploaded images/videos/thumbnails: Supabase Storage bucket from SUPABASE_STORAGE_BUCKET, default cxc-media.
+- Uploaded images/videos/thumbnails: Supabase Storage bucket from SUPABASE_STORAGE_BUCKET.
 - Stored media records contain the resulting public URL, type, title, description, category, sourceType, thumbnailUrl, crop config, published, featured, altText, and createdAt.
 
 Supabase table shapes expected by code:
@@ -454,7 +454,7 @@ SUPABASE_SERVICE_ROLE_KEY
 
 SUPABASE_STORAGE_BUCKET
 - Optional but recommended for hosted uploads.
-- Defaults to cxc-media.
+- Set this to the name of your public Supabase Storage bucket.
 
 CMS_STORAGE_PROVIDER
 - Optional.
@@ -524,12 +524,12 @@ Required Netlify environment variables:
 - CMS_STORAGE_PROVIDER=supabase
 - SUPABASE_URL
 - SUPABASE_SERVICE_ROLE_KEY
-- SUPABASE_STORAGE_BUCKET, or use default cxc-media.
+- SUPABASE_STORAGE_BUCKET.
 
 Supabase setup:
 1. Create table public.site_content with id primary key, content jsonb, updated_at timestamptz.
 2. Create table public.contact_messages with columns documented above.
-3. Create a public storage bucket named cxc-media, or set SUPABASE_STORAGE_BUCKET to another public bucket.
+3. Create a public storage bucket and set SUPABASE_STORAGE_BUCKET to its name.
 4. Ensure the service-role key is available only to Netlify functions/server code.
 
 Deployment verification:

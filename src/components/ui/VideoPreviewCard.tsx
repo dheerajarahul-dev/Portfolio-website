@@ -35,7 +35,7 @@ export default function VideoPreviewCard({
       aria-label={`Open video ${item.title}`}
       style={{ transform: "translateZ(0)" }}
     >
-      <div className={`relative w-full overflow-hidden bg-black ${isFeatured ? "aspect-square shrink-0 lg:aspect-auto lg:min-h-0 lg:flex-1" : "aspect-square shrink-0"}`}>
+      <div className={`relative w-full overflow-hidden bg-black ${isFeatured ? "aspect-[4/3] shrink-0 lg:aspect-auto lg:min-h-0 lg:flex-1" : "aspect-[4/3] shrink-0"}`}>
         <AmbientMediaFrame thumbnailUrl={thumbnailUrl} className="h-full w-full">
           <div className="absolute inset-0 bg-black/10 transition duration-500 group-hover:bg-black/20" />
           {thumbnailUrl ? (
