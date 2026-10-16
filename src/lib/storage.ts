@@ -273,7 +273,7 @@ export async function readContent(): Promise<SiteContent> {
   if (storageMode === "hosted") {
     const rows = await supabaseFetch<{ content: Partial<SiteContent> }[]>(
       "/rest/v1/site_content?id=eq.default&select=content&limit=1",
-      { method: "GET" },
+      { method: "GET", next: { revalidate: 15, tags: ["site-content"] } },
       "Failed to read hosted CMS content"
     );
     const content = mergeContent(rows[0]?.content ?? defaultContent);

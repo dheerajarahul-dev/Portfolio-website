@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { isDeepStrictEqual } from "util";
 import { hasAdminPermission } from "@/lib/auth";
 import { readContent, writeContent } from "@/lib/storage";
@@ -58,6 +58,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "You do not have permission to change Media Library content." }, { status: 403 });
     }
     const content = await writeContent(body);
+    revalidateTag("site-content", { expire: 0 });
     revalidatePath("/");
     revalidatePath("/library");
     revalidatePath("/founder");
