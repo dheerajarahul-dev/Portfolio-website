@@ -81,8 +81,8 @@ async function supabaseRequest<T>(endpoint: string, init: RequestInit = {}): Pro
     console.error(`Admin account storage failed (${response.status}): ${detail.slice(0, 300)}`);
     throw new Error("Admin account storage is unavailable. Check the admin_users table setup.");
   }
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const body = await response.text();
+  return body ? JSON.parse(body) as T : undefined as T;
 }
 
 async function readStoredUsers(): Promise<AdminUserRecord[]> {
