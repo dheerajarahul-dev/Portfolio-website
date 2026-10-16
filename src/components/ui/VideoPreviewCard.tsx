@@ -19,6 +19,13 @@ export default function VideoPreviewCard({
   isFeatured = false,
 }: VideoPreviewCardProps) {
   const thumbnailUrl = getMediaThumbnailUrl(item);
+  const title = item.title.trim();
+  const genericTitle = !title || /^untitled media$/i.test(title) || /^\d+$/.test(title);
+  const thumbnailAlt = item.altText?.trim() || (
+    genericTitle
+      ? `${item.category || "Portfolio"} ${item.type === "photo" ? "image" : "video"} thumbnail`
+      : `${title} ${item.type === "photo" ? "image" : "video"} thumbnail`
+  );
   const crop = item.crop;
   const imageStyle = crop
     ? {
@@ -41,7 +48,7 @@ export default function VideoPreviewCard({
           {thumbnailUrl ? (
             <Image
               src={thumbnailUrl}
-              alt={item.title}
+              alt={thumbnailAlt}
               fill
               sizes={isFeatured ? "(min-width: 768px) 66vw, 100vw" : "(min-width: 768px) 33vw, 100vw"}
               className="object-cover transition duration-500 group-hover:scale-105"

@@ -39,15 +39,6 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: "CreativeXCreations",
     creator: defaultContent.founder.name,
     publisher: "CreativeXCreations",
-    keywords: [
-      "CreativeXCreations",
-      "Creative X Creations",
-      "CreativeXCreation",
-      "video editing",
-      "cinematic video editing",
-      "short-form video editing",
-      "motion graphics",
-    ],
     robots: {
       index: true,
       follow: true,

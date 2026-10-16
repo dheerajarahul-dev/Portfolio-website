@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
@@ -22,6 +23,7 @@ export const dynamic = "force-dynamic";
 export default async function FounderPage() {
   const content = await readContent();
   const { founder } = content;
+  const biographyHasHeading = /^#\s/m.test(founder.biography);
 
   return (
     <>
@@ -69,10 +71,36 @@ export default async function FounderPage() {
               The person behind the work
             </p>
             <p className="mb-2 text-xs text-white/50 sm:text-sm">{founder.role}</p>
-            <h1 className="font-space text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">{founder.name}</h1>
+            {!biographyHasHeading && (
+              <h1 className="font-space text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">{founder.name}</h1>
+            )}
             <div className="mt-5 h-px w-16 bg-white/20" aria-hidden="true" />
-            <div className="mt-5 max-w-2xl whitespace-pre-line text-sm leading-7 text-white/70 sm:mt-7 sm:text-base sm:leading-8">
-              {founder.biography}
+            <div className="mt-5 max-w-2xl text-sm leading-7 text-white/70 sm:mt-7 sm:text-base sm:leading-8">
+              <ReactMarkdown
+                components={{
+                  h1: ({ children }) => (
+                    <h1 className="mb-5 font-space text-3xl font-semibold leading-tight text-white sm:text-4xl lg:text-5xl">
+                      {children}
+                    </h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2 className="mb-3 font-space text-2xl font-semibold leading-tight text-white sm:text-3xl">
+                      {children}
+                    </h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 className="mb-2 font-space text-lg font-semibold text-white sm:text-xl">
+                      {children}
+                    </h3>
+                  ),
+                  p: ({ children }) => <p className="mb-5 last:mb-0">{children}</p>,
+                  strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                  ul: ({ children }) => <ul className="mb-5 list-disc space-y-2 pl-6">{children}</ul>,
+                  ol: ({ children }) => <ol className="mb-5 list-decimal space-y-2 pl-6">{children}</ol>,
+                }}
+              >
+                {founder.biography}
+              </ReactMarkdown>
             </div>
             <Link href="/#contact" className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-4 py-2.5 text-sm font-medium text-white/85 transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 sm:mt-9">
               Contact CreativeXCreations
