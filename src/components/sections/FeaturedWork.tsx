@@ -63,7 +63,7 @@ export default function FeaturedWork() {
 
   return (
     <section id="work" className="scroll-mt-28 bg-[#050505] px-3 py-10 sm:px-5 sm:py-20 lg:px-6">
-      <div className="mx-auto max-w-[64rem]">
+      <div className="mx-auto max-w-[88rem]">
         <motion.div
           initial={false}
           whileInView={{ opacity: 1, y: 0 }}

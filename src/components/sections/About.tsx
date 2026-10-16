@@ -35,7 +35,7 @@ export default function About() {
 
   return (
     <section id="about" className="px-3 py-10 sm:px-5 sm:py-20 lg:px-6">
-      <div className="mx-auto grid max-w-[100rem] gap-3 sm:gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="mx-auto grid max-w-[88rem] gap-3 sm:gap-12 lg:grid-cols-[1.1fr_0.9fr]">
         <motion.div
           initial={false}
           whileInView={{ opacity: 1, x: 0 }}

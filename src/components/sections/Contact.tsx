@@ -133,8 +133,8 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="scroll-mt-28 px-3 py-8 sm:px-8 sm:py-12 lg:scroll-mt-[5.375rem] lg:px-10 lg:py-1">
-      <div className="mx-auto grid max-w-7xl min-w-0 gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-6">
+    <section id="contact" className="scroll-mt-28 px-3 py-8 sm:px-5 sm:py-12 lg:scroll-mt-[5.375rem] lg:px-6 lg:py-1">
+      <div className="mx-auto grid max-w-[88rem] min-w-0 gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-6">
         <div className="min-w-0 rounded-2xl border border-white/10 bg-[#111111]/85 p-5 shadow-2xl shadow-black/20 sm:rounded-[2rem] sm:p-8 lg:p-6">
           <span className="mb-2 inline-flex rounded-full bg-purple-500/10 px-3 py-2 text-xs uppercase tracking-[0.22em] text-purple-200 sm:px-4 sm:text-sm sm:tracking-[0.35em]">
             <EditableText path="contact.badge" value={section.badge} as="span" />

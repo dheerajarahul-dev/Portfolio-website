@@ -123,7 +123,7 @@ export default function Navbar() {
         animate={{ opacity: 1 }}
         className="fixed inset-x-0 top-0 z-50 pt-3 sm:pt-4"
       >
-        <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-6">
+        <div className="mx-auto max-w-[88rem] px-3 sm:px-5 lg:px-6">
           <div
             className={`header-shell flex items-center justify-between gap-2 rounded-full px-3 py-2 shadow-[0_12px_40px_rgba(0,0,0,0.22)] transition-[background-color,border-color,box-shadow] duration-300 sm:px-4 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-3 md:py-2.5 ${
               isScrolled ? "bg-[#0d0d11]/82" : "bg-[#0d0d11]/32"

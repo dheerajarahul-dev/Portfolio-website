@@ -30,7 +30,7 @@ export default function CustomSections() {
 
   return (
     <section className="px-3 py-10 sm:px-5 sm:py-20 lg:px-6">
-      <div className="mx-auto max-w-[100rem]">
+      <div className="mx-auto max-w-[88rem]">
         {hasSections ? (
           <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>

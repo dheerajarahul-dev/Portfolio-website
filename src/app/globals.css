@@ -152,6 +152,13 @@ section[id],
   color: rgba(255, 255, 255, 1);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    transform: translateY(-1px);
+  }
+}
+
 .nav-link:hover::after,
 .nav-link:focus-visible::after,
 .nav-link-active::after {

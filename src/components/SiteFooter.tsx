@@ -26,7 +26,7 @@ export default function SiteFooter({
   const displayBrandName = brandName.replace(/\s*x\s*/i, " X ").replace(/\s+/g, " ").trim().toUpperCase();
   return (
     <footer className="mx-3 my-3 overflow-hidden rounded-[20px] border border-[#29292d] bg-[#0b0c0f] text-white sm:mx-5 sm:my-5">
-      <div className="mx-auto grid max-w-[1500px] gap-7 px-5 py-7 sm:px-8 sm:py-9 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(270px,1.1fr)] lg:gap-0 lg:px-7 lg:py-10">
+      <div className="mx-auto grid max-w-[88rem] gap-7 px-5 py-7 sm:px-8 sm:py-9 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(270px,1.1fr)] lg:gap-0 lg:px-7 lg:py-10">
         <section aria-label="Creative X Creations" className="space-y-5 lg:border-r lg:border-[#303034] lg:pr-8">
           <Link href="/" className="inline-flex min-w-0 items-center gap-4 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300">
             <span className="grid h-[60px] w-[60px] shrink-0 place-items-center rounded-xl bg-white p-2.5 sm:h-[68px] sm:w-[68px]">

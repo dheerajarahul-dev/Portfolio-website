@@ -12,7 +12,7 @@ export default function Stats() {
 
   return (
     <section className="relative overflow-hidden px-3 py-10 sm:px-5 sm:py-20 lg:px-6" id="trust">
-      <div className="mx-auto max-w-[100rem]">
+      <div className="mx-auto max-w-[88rem]">
         <motion.div
           initial={false}
           whileInView={{ opacity: 1, y: 0 }}

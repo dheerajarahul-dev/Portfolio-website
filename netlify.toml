@@ -4,3 +4,4 @@
 
 [build.environment]
   SECRETS_SCAN_OMIT_KEYS = "CMS_STORAGE_PROVIDER,SUPABASE_STORAGE_BUCKET"
+  NEXT_PUBLIC_SITE_URL = "https://creativexcreations.netlify.app"
