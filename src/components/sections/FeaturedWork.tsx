@@ -47,17 +47,15 @@ export default function FeaturedWork() {
   const publishedVideos = content.mediaLibrary.items.filter(
     (item) => item.published && item.type === "video" && item.mediaUrl.trim()
   );
-    const displayItems = publishedVideos.filter(
-      (item) => item.published && item.featured && item.type === "video" && item.mediaUrl.trim()
-    ).slice(0, 9);
-    const matrixLayout = displayItems.length >= 5;
-    const gridLayout = matrixLayout
-      ? "grid-cols-2 lg:grid-cols-4 lg:[grid-auto-rows:minmax(0,1fr)]"
-      : displayItems.length === 1
-        ? "mx-auto max-w-[42rem] grid-cols-1"
-        : displayItems.length === 3
-          ? "grid-cols-2 lg:grid-cols-3"
-          : "grid-cols-2";
+  const displayItems = publishedVideos.filter((item) => item.featured).slice(0, 9);
+  const matrixLayout = displayItems.length >= 5;
+  const gridLayout = matrixLayout
+    ? "grid-cols-2 lg:grid-cols-4 lg:[grid-auto-rows:minmax(0,1fr)]"
+    : displayItems.length === 1
+      ? "mx-auto max-w-[42rem] grid-cols-1"
+      : displayItems.length === 3
+        ? "grid-cols-2 lg:grid-cols-3"
+        : "grid-cols-2";
 
   if (displayItems.length === 0 && !editMode) return null;
 
@@ -84,8 +82,8 @@ export default function FeaturedWork() {
               <ProjectCard
                 key={item.id}
                 item={item}
-                  featured={matrixLayout}
-                  className={matrixLayout ? "col-span-2 lg:row-span-2" : ""}
+                featured={matrixLayout}
+                className={matrixLayout ? "col-span-2 lg:row-span-2" : ""}
                 onOpen={() => {
                   saveScrollReturnTarget(window.location.pathname + window.location.search, "work", window.scrollY);
                   router.push(
@@ -111,7 +109,7 @@ export default function FeaturedWork() {
           </div>
         ) : (
           <p className="rounded-xl border border-dashed border-white/15 px-5 py-8 text-center text-sm text-white/55">
-              Mark published videos as Home to show them here. The first selected video is main; up to eight more fill the small slots.
+            Mark published videos as Home to show them here. The first selected video is main; up to eight more fill the small slots.
           </p>
         )}
       </div>

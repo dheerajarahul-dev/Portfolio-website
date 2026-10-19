@@ -61,6 +61,43 @@ export interface PlayerSettings {
   description: string;
   backgroundUrl: string;
   accentColor: string;
+  showComments: boolean;
+  showSuggestions: boolean;
+  showPlaybackSettings: boolean;
+  showReferenceButton: boolean;
+  backButtonLabel: string;
+  speedLabel: string;
+  qualityLabel: string;
+  referenceButtonLabel: string;
+  commentsTitle: string;
+  commentsSortLabel: string;
+  commentsNewestLabel: string;
+  commentsOldestLabel: string;
+  commentNameLabel: string;
+  commentNamePlaceholder: string;
+  commentBodyLabel: string;
+  commentPlaceholder: string;
+  commentSubmitLabel: string;
+  commentsPrivacyNote: string;
+  commentsEmptyMessage: string;
+  suggestionsTitle: string;
+  suggestionsEmptyMessage: string;
+  youtubeQualityMessage: string;
+  sourceQualityMessage: string;
+  noVideoMessage: string;
+  commentsLoadingMessage: string;
+  commentsUnavailableMessage: string;
+  playButtonLabel: string;
+  pauseButtonLabel: string;
+  muteButtonLabel: string;
+  unmuteButtonLabel: string;
+  fullscreenButtonLabel: string;
+  timelineLabel: string;
+  volumeLabel: string;
+  referenceAddedLabel: string;
+  qualityAutoValue: string;
+  qualitySourceValue: string;
+  currentVideoLabel: string;
 }
 
 export interface FounderProfile {

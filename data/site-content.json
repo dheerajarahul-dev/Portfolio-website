@@ -168,6 +168,24 @@
     "description": "A curated library of published work, visuals, and client-ready edits from the CreativeXCreations portfolio.",
     "items": [
       {
+        "id": "d4cfda27-498f-4267-94aa-9d0130d135a2",
+        "title": "Untitled media",
+        "description": "",
+        "category": "General",
+        "type": "video",
+        "sourceType": "upload",
+        "mediaUrl": "/uploads/1792422009064-Blue_commercial_video_produc__1080p_202608122314.mp4",
+        "thumbnailUrl": "",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "published": true,
+        "featured": true,
+        "createdAt": "2026-10-19T14:59:48.675Z"
+      },
+      {
         "id": "8945f694-9b64-47f6-ba26-7708d9d5fd25",
         "title": "Untitled media",
         "description": "",

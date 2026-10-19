@@ -116,6 +116,20 @@ function SelectField({
   );
 }
 
+function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="flex min-h-11 items-center gap-3 rounded-xl border border-white/10 bg-[#0a0a0a] px-3 text-sm text-white/75">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-4 w-4 accent-purple-400"
+      />
+      {label}
+    </label>
+  );
+}
+
 function getMediaPreviewUrl(item: MediaLibraryItem) {
   return getMediaThumbnailUrl(item) || "/logo.png";
 }
@@ -1191,6 +1205,15 @@ export default function AdminPage() {
     await persistContent({ ...content, mediaLibrary: { ...content.mediaLibrary, items } });
   };
 
+  const livePlayerItem = content.mediaLibrary.items.find(
+    (item) => item.published && item.type === "video" && item.mediaUrl.trim() && item.title.trim() && !/^untitled media$/i.test(item.title.trim())
+  );
+  const livePlayerParams = new URLSearchParams({ edit: "1" });
+  if (livePlayerItem) {
+    livePlayerParams.set("videoUrl", livePlayerItem.mediaUrl);
+    livePlayerParams.set("title", livePlayerItem.title);
+  }
+
   if (authenticated === null) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#050505] text-white">
@@ -1775,13 +1798,23 @@ export default function AdminPage() {
                     Update copy, branding, showcase video, pricing plans, and contact details. Or use the visual live editor.
                   </p>
                 </div>
-                <Link
-                  href="/?edit=1"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-400/40 bg-purple-600/20 px-4 py-2.5 text-sm font-semibold text-purple-100 hover:bg-purple-600/35"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Open Live Editor
-                </Link>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href="/?edit=1"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-400/40 bg-purple-600/20 px-4 py-2.5 text-sm font-semibold text-purple-100 hover:bg-purple-600/35"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit Home Live
+                  </Link>
+                  <Link
+                    href={`/player?${livePlayerParams.toString()}`}
+                    target="_blank"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-200/25 bg-cyan-200/10 px-4 py-2.5 text-sm font-semibold text-cyan-100 hover:bg-cyan-200/15"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Live-edit Player
+                  </Link>
+                </div>
               </div>
 
               {/* Hero & Branding */}
@@ -2455,6 +2488,47 @@ export default function AdminPage() {
                     value={content.player.accentColor}
                     onChange={(v) => setContent((c) => ({ ...c, player: { ...c.player, accentColor: v } }))}
                   />
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <ToggleField label="Show comments" checked={content.player.showComments} onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showComments: checked } }))} />
+                    <ToggleField label="Show suggestions" checked={content.player.showSuggestions} onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showSuggestions: checked } }))} />
+                    <ToggleField label="Show playback settings" checked={content.player.showPlaybackSettings} onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showPlaybackSettings: checked } }))} />
+                    <ToggleField label="Show reference buttons" checked={content.player.showReferenceButton} onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showReferenceButton: checked } }))} />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Back Button Label" value={content.player.backButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, backButtonLabel: value } }))} />
+                    <Field label="Speed Control Label" value={content.player.speedLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, speedLabel: value } }))} />
+                    <Field label="Quality Label" value={content.player.qualityLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, qualityLabel: value } }))} />
+                    <Field label="Reference Button Label" value={content.player.referenceButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, referenceButtonLabel: value } }))} />
+                    <Field label="Suggestions Heading" value={content.player.suggestionsTitle} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, suggestionsTitle: value } }))} />
+                    <Field label="Empty Suggestions Message" value={content.player.suggestionsEmptyMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, suggestionsEmptyMessage: value } }))} />
+                    <Field label="Comments Heading" value={content.player.commentsTitle} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsTitle: value } }))} />
+                    <Field label="Comment Sort Label" value={content.player.commentsSortLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsSortLabel: value } }))} />
+                    <Field label="Newest Sort Option" value={content.player.commentsNewestLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsNewestLabel: value } }))} />
+                    <Field label="Oldest Sort Option" value={content.player.commentsOldestLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsOldestLabel: value } }))} />
+                    <Field label="Name Field Label" value={content.player.commentNameLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentNameLabel: value, commentNamePlaceholder: value } }))} />
+                    <Field label="Comment Field Label" value={content.player.commentBodyLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentBodyLabel: value, commentPlaceholder: value } }))} />
+                    <Field label="Comment Submit Button" value={content.player.commentSubmitLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentSubmitLabel: value } }))} />
+                    <Field label="Comments Empty Message" value={content.player.commentsEmptyMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsEmptyMessage: value } }))} />
+                    <Field label="Comment Privacy Note" value={content.player.commentsPrivacyNote} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsPrivacyNote: value } }))} multiline />
+                    <Field label="YouTube Quality Guidance" value={content.player.youtubeQualityMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, youtubeQualityMessage: value } }))} multiline />
+                    <Field label="Uploaded Video Guidance" value={content.player.sourceQualityMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, sourceQualityMessage: value } }))} multiline />
+                    <Field label="No Video Message" value={content.player.noVideoMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, noVideoMessage: value } }))} />
+                    <Field label="Comments Loading Message" value={content.player.commentsLoadingMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsLoadingMessage: value } }))} />
+                    <Field label="Comments Unavailable Message" value={content.player.commentsUnavailableMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsUnavailableMessage: value } }))} />
+                    <Field label="Name Field Placeholder" value={content.player.commentNamePlaceholder} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentNamePlaceholder: value } }))} />
+                    <Field label="Comment Field Placeholder" value={content.player.commentPlaceholder} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentPlaceholder: value } }))} />
+                    <Field label="Play Button Label" value={content.player.playButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, playButtonLabel: value } }))} />
+                    <Field label="Pause Button Label" value={content.player.pauseButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, pauseButtonLabel: value } }))} />
+                    <Field label="Mute Button Label" value={content.player.muteButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, muteButtonLabel: value } }))} />
+                    <Field label="Unmute Button Label" value={content.player.unmuteButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, unmuteButtonLabel: value } }))} />
+                    <Field label="Fullscreen Button Label" value={content.player.fullscreenButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, fullscreenButtonLabel: value } }))} />
+                    <Field label="Timeline Accessibility Label" value={content.player.timelineLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, timelineLabel: value } }))} />
+                    <Field label="Volume Accessibility Label" value={content.player.volumeLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, volumeLabel: value } }))} />
+                    <Field label="Reference Confirmation Label" value={content.player.referenceAddedLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, referenceAddedLabel: value } }))} />
+                    <Field label="Auto Quality Text" value={content.player.qualityAutoValue} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, qualityAutoValue: value } }))} />
+                    <Field label="Source Quality Text" value={content.player.qualitySourceValue} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, qualitySourceValue: value } }))} />
+                    <Field label="Current Video Heading" value={content.player.currentVideoLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, currentVideoLabel: value } }))} />
+                  </div>
                 </div>
               </details>
 

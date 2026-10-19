@@ -179,6 +179,14 @@ export default function Navbar() {
             </nav>
 
             <div className="flex items-center justify-end gap-2">
+              <a
+                href="https://creativexstudioo.netlify.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden min-h-9 items-center justify-center rounded-full border border-white/15 bg-white/5 px-3.5 text-[0.68rem] font-semibold text-white/80 transition hover:border-cyan-200/35 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 md:inline-flex"
+              >
+                Studio
+              </a>
               <button
                 type="button"
                 onClick={() => handleNavigation("#contact")}
@@ -213,6 +221,15 @@ export default function Navbar() {
             className="fixed inset-x-0 top-[4rem] z-40 mx-3 rounded-2xl border border-white/10 bg-[#0d0d11]/90 p-2.5 shadow-2xl backdrop-blur-xl md:hidden"
           >
             <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+              <a
+                href="https://creativexstudioo.netlify.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full rounded-xl border border-cyan-200/20 bg-cyan-300/5 px-3.5 py-2.5 text-left text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/10"
+              >
+                Studio
+              </a>
               {navItems.map((link) => {
                 const isHashLink = link.href.startsWith("#");
 
