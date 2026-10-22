@@ -873,7 +873,7 @@ export default function AdminPage() {
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [username, setUsername] = useState("dheeraj@gmail.com");
-  const [password, setPassword] = useState("dheeraj1213");
+  const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [accountUsername, setAccountUsername] = useState("");
   const [accountPassword, setAccountPassword] = useState("");
@@ -3613,7 +3613,7 @@ export default function AdminPage() {
                   <div className="rounded-xl border border-white/5 bg-black/30 p-4">
                     <p className="font-medium text-white">Admin Authentication</p>
                     <p className="mt-1 text-xs leading-5 text-white/50">
-                      The administrator password is managed via the <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-purple-200">ADMIN_PASSWORD</code> environment variable (defined in your server’s <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-purple-200">.env.local</code> or hosting dashboard). To change the admin password, update that variable and restart the deployment.
+                      The administrator password is managed securely via your server credentials or hosted database accounts. To change the admin password, update your environment credentials or accounts list.
                     </p>
                   </div>
                   <div className="rounded-xl border border-white/5 bg-black/30 p-4">

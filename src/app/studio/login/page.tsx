@@ -8,7 +8,7 @@ import { Eye, EyeOff, Loader2, ArrowLeft, Film } from "lucide-react";
 export default function StudioLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("dheeraj@gmail.com");
-  const [password, setPassword] = useState("dheeraj1213");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -155,7 +155,7 @@ export default function StudioLoginPage() {
               </div>
             </div>
 
-            {/* 1-Click Quick Login Card */}
+            {/* Quick Login Helper */}
             <div className="p-3.5 bg-gradient-to-r from-violet-950/60 to-purple-950/40 border border-violet-700/50 rounded-xl flex items-center justify-between gap-3 shadow-sm">
               <div>
                 <p className="text-xs font-semibold text-white">Default Super Admin</p>
@@ -166,20 +166,11 @@ export default function StudioLoginPage() {
                   type="button"
                   onClick={() => {
                     setEmail("dheeraj@gmail.com");
-                    setPassword("dheeraj1213");
                     setError(null);
                   }}
                   className="text-zinc-400 hover:text-zinc-200 text-xs underline"
                 >
-                  Autofill
-                </button>
-                <button
-                  type="button"
-                  onClick={() => performLogin("dheeraj@gmail.com", "dheeraj1213")}
-                  disabled={loading}
-                  className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium text-xs transition-colors shadow-sm"
-                >
-                  1-Click Login
+                  Fill Email
                 </button>
               </div>
             </div>

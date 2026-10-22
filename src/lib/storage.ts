@@ -11,11 +11,12 @@ const MAX_BACKUPS_PER_FILE = 20;
 const isServerlessRuntime = Boolean(
   process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
 );
+const DEFAULT_SUPABASE_URL = "https://ejhonioesosayoobeoui.supabase.co";
 const hasHostedStorageConfig = Boolean(
-  process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL) && process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 const allowLocalJsonFallback = process.env.ALLOW_LOCAL_JSON_STORAGE === "true";
-const supabaseUrl = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+const supabaseUrl = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim().replace(/\/+$/, "");
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabaseBucket = process.env.SUPABASE_STORAGE_BUCKET || "cxc-media";
 const MAX_ASSET_BYTES = 100 * 1024 * 1024;

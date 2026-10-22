@@ -53,8 +53,14 @@ function toHostedRow(record: AdminUserRecord): HostedAdminUserRow {
   };
 }
 
+const DEFAULT_SUPABASE_URL = "https://ejhonioesosayoobeoui.supabase.co";
+
+function getSupabaseUrl() {
+  return (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim().replace(/\/+$/, "");
+}
+
 function isHostedStorage() {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(getSupabaseUrl() && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
 function getBootstrapCredentials() {
@@ -65,7 +71,7 @@ function getBootstrapCredentials() {
 }
 
 async function supabaseRequest<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
-  const base = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+  const base = getSupabaseUrl();
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!base || !key) throw new Error("Hosted admin account storage is not configured.");
   const response = await fetch(`${base}${endpoint}`, {

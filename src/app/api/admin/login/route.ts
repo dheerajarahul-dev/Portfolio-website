@@ -79,7 +79,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!process.env.ADMIN_PASSWORD && !process.env.SUPABASE_URL) {
+  const supabaseUrl = (process.env.SUPABASE_URL || "https://ejhonioesosayoobeoui.supabase.co").trim();
+  if (!process.env.ADMIN_PASSWORD && !supabaseUrl) {
     console.error(
       "Admin account bootstrap is not configured. Set ADMIN_PASSWORD or configure hosted admin accounts."
     );

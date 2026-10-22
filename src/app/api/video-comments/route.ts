@@ -10,8 +10,10 @@ import {
 
 const MAX_REQUEST_BYTES = 4 * 1024;
 
+const DEFAULT_SUPABASE_URL = "https://ejhonioesosayoobeoui.supabase.co";
+
 function getSupabaseConfig() {
-  const url = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+  const url = (process.env.SUPABASE_URL?.trim() || DEFAULT_SUPABASE_URL).replace(/\/+$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   return url && key ? { url, key } : null;
 }

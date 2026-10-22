@@ -33,14 +33,17 @@ import type {
 
 // ── Supabase client ───────────────────────────────────────────────────────────
 
+const DEFAULT_SUPABASE_URL = "https://ejhonioesosayoobeoui.supabase.co";
+
 export function isSupabaseConfigured(): boolean {
   return Boolean(
-    process.env.SUPABASE_URL?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+    (process.env.SUPABASE_URL?.trim() || DEFAULT_SUPABASE_URL) &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
   );
 }
 
 function getSupabase() {
-  const url = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+  const url = (process.env.SUPABASE_URL?.trim() || DEFAULT_SUPABASE_URL).replace(/\/+$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
     throw new Error(

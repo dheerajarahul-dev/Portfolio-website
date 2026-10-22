@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ code: "PERMISSION_REQUIRED", error: "You do not have permission to upload media." }, { status: 403 });
   }
 
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const supabaseUrl = (process.env.SUPABASE_URL || "https://ejhonioesosayoobeoui.supabase.co").trim();
+  if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ code: "DIRECT_UPLOAD_UNAVAILABLE", directUploadUnavailable: true }, { status: 501 });
   }
 
