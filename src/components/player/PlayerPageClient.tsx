@@ -234,7 +234,6 @@ export default function PlayerPageClient({
       console.warn("Web Audio filter not available or CORS restricted:", err);
     }
   };
-
   const changePlaybackSpeed = (speed: string) => {
     setPlaybackSpeed(speed);
     if (videoRef.current) videoRef.current.playbackRate = Number(speed);
@@ -357,7 +356,6 @@ export default function PlayerPageClient({
       setDeletingCommentId(null);
     }
   };
-
   const addVideoReference = () => {
     addReference(effectiveTitle, effectiveVideoUrl);
   };
@@ -821,6 +819,7 @@ export default function PlayerPageClient({
                 )}
               </section>
             )}
+
               </div>
 
             {content.player.showSuggestions && <aside className="min-w-0 rounded-xl border border-white/10 bg-[#101014]/95 p-4 sm:rounded-2xl sm:p-5">

@@ -204,6 +204,32 @@ export default function Contact({ initialVideoReference = null }: { initialVideo
             </div>
           )}
 
+          {videoReference && (
+            <div className="mt-4 flex min-w-0 items-start gap-3 rounded-xl border border-cyan-200/20 bg-cyan-200/[0.06] p-3 sm:mt-5">
+              <Tag className="mt-0.5 h-4 w-4 shrink-0 text-cyan-100" aria-hidden="true" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-100/70">Video attached to message</p>
+                <a href={videoReference.url} target="_blank" rel="noreferrer" className="mt-1 block break-all text-sm font-medium text-white underline decoration-cyan-200/40 underline-offset-2">
+                  {videoReference.title}
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setVideoReference(null);
+                  setForm((current) => ({
+                    ...current,
+                    subject: current.subject === `Video inquiry: ${videoReference.title}`.slice(0, 80) ? "" : current.subject,
+                  }));
+                }}
+                aria-label="Remove attached video"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-white/55 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+
           {sentBoxOpen && (
             <section
               id="contact-sent-box"

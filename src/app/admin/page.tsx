@@ -184,7 +184,6 @@ function parseChapterTime(str: string): number {
   }
   return parseInt(str, 10) || 0;
 }
-
 function getMediaPreviewUrl(item: MediaLibraryItem) {
   return getMediaThumbnailUrl(item) || "/logo.png";
 }

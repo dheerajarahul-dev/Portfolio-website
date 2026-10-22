@@ -93,6 +93,7 @@ Create a public Storage bucket named `cxc-media` or set `SUPABASE_STORAGE_BUCKET
   - `/` — public landing page (server-rendered, revalidates every 15 s).
   - `/player` — dedicated video player (`/player?videoUrl=…&title=…`).
   - `/admin` — password-protected CMS (content editing + contact inbox).
+  - The home-page Studio button opens the external CreativeXCreations Studio workspace.
   - `/library` — published media library.
 - **Featured work** — only published videos checked as Home appear. Up to nine selected videos fill a square collage: one main tile and up to eight small tiles. Unchecking Home removes a video from the homepage.
 - **Inline editing** — visiting `/?edit=1` while logged in enables text/image selection, editing, dragging, and resizing on the live page (see `SiteContentContext` + `src/components/edit/`).

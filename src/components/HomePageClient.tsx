@@ -39,9 +39,11 @@ function EditorPreview({ children }: { children: React.ReactNode }) {
 export default function HomePageClient({
   initialContent,
   startInEditMode = false,
+  videoReference = null,
 }: {
   initialContent: SiteContent;
   startInEditMode?: boolean;
+  videoReference?: { title: string; url: string } | null;
 }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -81,7 +83,7 @@ export default function HomePageClient({
               <Pricing />
               <CustomSections />
               <About />
-              <Contact />
+              <Contact initialVideoReference={videoReference} />
             </main>
           </EditorPreview>
         </div>

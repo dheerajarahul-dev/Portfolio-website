@@ -49,6 +49,7 @@ export default function FeaturedWork() {
     (item) => item.published && item.type === "video" && item.mediaUrl.trim()
   );
 
+
   const displayItems = useMemo(() => {
     const featured = publishedVideos.filter((item) => item.featured);
     return (featured.length > 0 ? featured : publishedVideos).slice(0, 9);
@@ -118,7 +119,7 @@ export default function FeaturedWork() {
           </AnimatePresence>
         ) : (
           <p className="rounded-xl border border-dashed border-white/15 px-5 py-8 text-center text-sm text-white/55">
-            Mark published videos as Home to show them here.
+            Mark published videos as Home to show them here. The first selected video is main; up to eight more fill the small slots.
           </p>
         )}
       </div>

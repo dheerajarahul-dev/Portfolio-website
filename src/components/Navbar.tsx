@@ -185,7 +185,6 @@ export default function Navbar() {
               >
                 Studio
               </Link>
-
               <button
                 type="button"
                 onClick={() => handleNavigation("#contact")}
@@ -220,6 +219,15 @@ export default function Navbar() {
             className="fixed inset-x-0 top-[4rem] z-40 mx-3 rounded-2xl border border-white/10 bg-[#0d0d11]/90 p-2.5 shadow-2xl backdrop-blur-xl md:hidden"
           >
             <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+              <a
+                href="https://creativexstudioo.netlify.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full rounded-xl border border-cyan-200/20 bg-cyan-300/5 px-3.5 py-2.5 text-left text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/10"
+              >
+                Studio
+              </a>
               {navItems.map((link) => {
                 const isHashLink = link.href.startsWith("#");
 

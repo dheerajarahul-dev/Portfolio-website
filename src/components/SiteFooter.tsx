@@ -55,6 +55,7 @@ export default function SiteFooter({
               <li><Link href="/#pricing" className="transition-colors hover:text-white focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4">Services</Link></li>
               <li><Link href="/#about" className="transition-colors hover:text-white focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4">About</Link></li>
               <li><Link href="/#contact" className="transition-colors hover:text-white focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4">Contact</Link></li>
+              <li><a href="https://creativexstudioo.netlify.app/" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4">Studio</a></li>
             </ul>
           </nav>
           <nav aria-label="Legal">
