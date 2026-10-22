@@ -472,7 +472,7 @@ export async function appendMessage(
 
 export async function updateMessage(
   id: string,
-  patch: Partial<Pick<ContactMessage, "read" | "deletedAt">>
+  patch: Partial<Pick<ContactMessage, "read" | "deletedAt" | "repliedAt">>
 ): Promise<ContactMessage | null> {
   return enqueueMessageWrite(async () => {
     if (getStorageMode() === "hosted") {

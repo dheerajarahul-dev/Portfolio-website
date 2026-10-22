@@ -121,16 +121,16 @@ export default function Hero() {
                 event.preventDefault();
                 if (!editMode) scrollToSection("work");
               }}
-              className="glass-cta glass-cta-primary inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3 text-sm font-semibold text-black lg:min-w-56 lg:flex-1 lg:px-6 lg:py-4 lg:text-base"
+              className="glass-cta glass-cta-primary group inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_0_28px_rgba(124,58,237,0.4)] transition-all duration-300 hover:shadow-[0_0_42px_rgba(124,58,237,0.65)] hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black lg:min-w-56 lg:flex-1 lg:px-6 lg:py-4 lg:text-base"
             >
               <EditableText path="hero.ctaWork" value={hero.ctaWork} as="span" showEditButton={!editMode} />
-              <ArrowUpRight className="h-4 w-4 shrink-0" />
+              <ArrowUpRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
             <Link
               href={`/player?videoUrl=${encodeURIComponent(`https://www.youtube.com/watch?v=${hero.youtubeVideoId}`)}&title=${encodeURIComponent("2026 Demo Reel")}`}
-              className="glass-cta inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3 text-sm font-semibold text-white lg:min-w-56 lg:flex-1 lg:px-6 lg:py-4 lg:text-base"
+              className="glass-cta group inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3.5 text-sm font-semibold text-white/95 transition-all duration-300 hover:border-purple-400/50 hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black lg:min-w-56 lg:flex-1 lg:px-6 lg:py-4 lg:text-base"
             >
-              <Play className="h-4 w-4 fill-current" />
+              <Play className="h-4 w-4 fill-current transition-transform duration-300 group-hover:scale-110" />
               <EditableText path="hero.ctaReel" value={hero.ctaReel} as="span" showEditButton={!editMode} />
             </Link>
             <Link
@@ -139,10 +139,10 @@ export default function Hero() {
                 event.preventDefault();
                 if (!editMode) scrollToSection("contact");
               }}
-              className="glass-cta inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3 text-sm font-semibold text-white lg:min-w-56 lg:flex-1 lg:px-6 lg:py-4 lg:text-base"
+              className="glass-cta group inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3.5 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/30 hover:bg-white/[0.06] hover:text-white hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black lg:min-w-56 lg:flex-1 lg:px-6 lg:py-4 lg:text-base"
             >
               <EditableText path="hero.ctaContact" value={hero.ctaContact} as="span" showEditButton={!editMode} />
-              <Mail className="h-4 w-4 shrink-0" />
+              <Mail className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>

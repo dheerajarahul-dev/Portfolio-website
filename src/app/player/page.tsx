@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { readContent } from "@/lib/storage";
 import { getSiteUrl } from "@/lib/site-url";
 import PlayerPageClient from "@/components/player/PlayerPageClient";
+import { SiteContentProvider } from "@/context/SiteContentContext";
+import EditModeBar from "@/components/edit/EditModeBar";
+import EditorInspector from "@/components/edit/EditorInspector";
 
 const siteUrl = getSiteUrl();
 
@@ -15,7 +18,7 @@ export const metadata: Metadata = {
 export default async function PlayerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ videoUrl?: string | string[]; title?: string | string[] }>;
+  searchParams: Promise<{ videoUrl?: string | string[]; title?: string | string[]; edit?: string }>;
 }) {
   const params = await searchParams;
   const content = await readContent();
@@ -27,10 +30,13 @@ export default async function PlayerPage({
     : params.title;
 
   return (
+    <SiteContentProvider initialContent={content} startInEditMode={params.edit === "1"}>
     <PlayerPageClient
-      content={content}
       videoUrl={videoUrl}
-      title={title || content.player.title}
+      title={title || ""}
     />
+      <EditModeBar />
+      <EditorInspector />
+    </SiteContentProvider>
   );
 }

@@ -28,12 +28,16 @@ export default function SiteFooter({
     <footer className="mx-3 my-3 overflow-hidden rounded-[20px] border border-[#29292d] bg-[#0b0c0f] text-white sm:mx-5 sm:my-5">
       <div className="mx-auto grid max-w-[88rem] gap-7 px-5 py-7 sm:px-8 sm:py-9 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(270px,1.1fr)] lg:gap-0 lg:px-7 lg:py-10">
         <section aria-label="Creative X Creations" className="space-y-5 lg:border-r lg:border-[#303034] lg:pr-8">
-          <Link href="/" className="inline-flex min-w-0 items-center gap-4 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300">
-            <span className="grid h-[60px] w-[60px] shrink-0 place-items-center rounded-xl bg-white p-2.5 sm:h-[68px] sm:w-[68px]">
-              <Image src="/assets/logo-icon.png" alt="" width={48} height={48} className="h-full w-full object-contain" />
+          <Link href="/" className="group inline-flex min-w-0 items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">
+            <span className="grid h-[56px] w-[56px] shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] p-2 shadow-[0_0_20px_rgba(124,58,237,0.15)] transition duration-300 group-hover:border-purple-400/40 group-hover:bg-purple-500/10 sm:h-[64px] sm:w-[64px] sm:p-2.5">
+              <Image src="/assets/logo-icon.png" alt="" width={48} height={48} className="h-full w-full object-contain transition duration-300 group-hover:scale-105" />
             </span>
             <span className="min-w-0">
-              <span className="block font-space text-base font-bold text-white sm:text-lg">{displayBrandName}</span>
+              <span className="inline-flex items-center whitespace-nowrap font-space text-base font-bold text-white transition-colors duration-300 group-hover:text-purple-200 sm:text-lg">
+                <span className="shrink-0">CREATIVE</span>
+                <span className="brand-x-bulb mx-1.5 shrink-0 select-none">X</span>
+                <span className="shrink-0">CREATIONS</span>
+              </span>
               <span className="mt-1 block text-xs leading-5 text-white/60 sm:text-sm">Editing with purpose. Stories with impact.</span>
             </span>
           </Link>

@@ -136,7 +136,11 @@ export default function Pricing() {
                       window.dispatchEvent(new CustomEvent("creativex:project-type", { detail: { projectType } }));
                       scrollToSection("contact");
                     }}
-                    className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-full bg-purple-500 px-5 py-3 text-sm font-semibold text-white hover:bg-purple-400"
+                    className={`inline-flex min-h-12 w-full items-center justify-center whitespace-nowrap rounded-full px-5 py-3.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                      plan.highlight
+                        ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white shadow-[0_0_24px_rgba(124,58,237,0.45)] hover:shadow-[0_0_36px_rgba(124,58,237,0.7)] hover:brightness-110 active:scale-[0.98]"
+                        : "border border-white/15 bg-white/5 text-white/90 hover:border-white/30 hover:bg-white/10 hover:text-white active:scale-[0.98]"
+                    }`}
                   >
                     Start a Project
                   </Link>

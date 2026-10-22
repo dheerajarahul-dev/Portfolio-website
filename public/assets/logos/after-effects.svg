@@ -1,6 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
-  <title id="title">Adobe After Effects</title>
-  <rect width="1024" height="1024" fill="#fff"/>
-  <rect x="209" y="217" width="625" height="625" rx="105" fill="#1f285b"/>
-  <text x="327" y="648" fill="#8e98cf" font-family="Arial, Helvetica, sans-serif" font-size="360" font-weight="700">Ae</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Adobe After Effects">
+  <defs>
+    <linearGradient id="aeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#140026"/>
+      <stop offset="50%" stop-color="#240046"/>
+      <stop offset="100%" stop-color="#3c096c"/>
+    </linearGradient>
+    <linearGradient id="aeText" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0aaff"/>
+      <stop offset="100%" stop-color="#c77dff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#aeBg)"/>
+  <rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="#c77dff" stroke-width="4" stroke-opacity="0.35"/>
+  <path d="M124 368l66-224h42l66 224h-42l-15-54h-62l-15 54H124zm65-88h44l-22-82h-2l-20 82z" fill="url(#aeText)"/>
+  <path d="M312 284c0-48 34-72 74-72 42 0 66 27 66 69 0 4-1 9-1 12h-99c2 27 18 42 43 42 16 0 28-6 36-16l24 20c-14 18-35 28-62 28-48 0-81-34-81-83zm101-16c-2-22-15-34-31-34-18 0-30 12-32 34h63z" fill="url(#aeText)"/>
 </svg>

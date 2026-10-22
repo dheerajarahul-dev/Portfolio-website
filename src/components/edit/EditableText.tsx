@@ -10,9 +10,21 @@ type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4";
 
 function formatText(value: string, highlightX: boolean) {
   if (!highlightX) return value;
+  const match = value.match(/^(.*?)\s*([xX])\s*(.*)$/);
+  if (match) {
+    const [, before, xChar, after] = match;
+    return (
+      <span className="inline-flex items-center justify-center whitespace-nowrap leading-none">
+        {before && <span className="inline-block shrink-0">{before}</span>}
+        <span className="brand-x-bulb mx-1.5 shrink-0 select-none">{xChar}</span>
+        {after && <span className="inline-block shrink-0">{after}</span>}
+      </span>
+    );
+  }
+
   return value.split(/(x)/gi).map((part, index) =>
     part.toLowerCase() === "x"
-      ? <span key={`${part}-${index}`} className="brand-x-bulb">{part}</span>
+      ? <span key={`${part}-${index}`} className="brand-x-bulb mx-1.5 shrink-0 select-none">{part}</span>
       : part
   );
 }

@@ -1,7 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
-  <title id="title">Adobe Premiere Pro</title>
-  <rect width="1024" height="1024" fill="#fff"/>
-  <path d="M200 206h374v762H192V787h8V206Z" fill="#080460"/>
-  <path d="M574 184h386v784H574V184Z" fill="#080460"/>
-  <text x="356" y="650" fill="#9293ff" font-family="Arial, Helvetica, sans-serif" font-size="360" font-weight="700">Pr</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Adobe Premiere Pro">
+  <defs>
+    <linearGradient id="prBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020024"/>
+      <stop offset="50%" stop-color="#00005b"/>
+      <stop offset="100%" stop-color="#050838"/>
+    </linearGradient>
+    <linearGradient id="prText" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c47aff"/>
+      <stop offset="100%" stop-color="#9999ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#prBg)"/>
+  <rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="#9999ff" stroke-width="4" stroke-opacity="0.35"/>
+  <path d="M148 144h84c48 0 76 24 76 64 0 42-30 66-78 66h-42v94H148V144zm40 94h40c24 0 38-11 38-30 0-18-13-29-37-29h-41v59z" fill="url(#prText)"/>
+  <path d="M324 218h38v24h2c8-18 25-28 46-28 5 0 10 1 14 2v38c-5-2-12-3-18-3-26 0-42 16-42 45v72h-40V218z" fill="url(#prText)"/>
 </svg>

@@ -105,7 +105,55 @@
     "title": "",
     "description": "A focused playback space with branded visuals, controls, and a clean layout optimized for every edit.",
     "backgroundUrl": "",
-    "accentColor": "#7C3AED"
+    "accentColor": "#7C3AED",
+    "showComments": true,
+    "showSuggestions": true,
+    "showPlaybackSettings": true,
+    "showReferenceButton": true,
+    "backButtonLabel": "Back to library",
+    "speedLabel": "Speed",
+    "qualityLabel": "Quality",
+    "referenceButtonLabel": "Add as reference",
+    "commentsTitle": "Comments",
+    "commentsSortLabel": "Sort by",
+    "commentsNewestLabel": "Newest first",
+    "commentsOldestLabel": "Oldest first",
+    "commentNameLabel": "Your name",
+    "commentNamePlaceholder": "Your name",
+    "commentBodyLabel": "Comment",
+    "commentPlaceholder": "Add a comment...",
+    "commentSubmitLabel": "Comment",
+    "commentsPrivacyNote": "Comments are public and tied to this video.",
+    "commentsEmptyMessage": "No comments yet. Start the conversation.",
+    "suggestionsTitle": "More to watch",
+    "suggestionsEmptyMessage": "More published videos will appear here.",
+    "youtubeQualityMessage": "Use YouTube’s timeline and settings menu to seek and choose an available quality. Playback adapts to your connection.",
+    "sourceQualityMessage": "Use the video timeline to seek. Playback speed is adjustable; quality depends on the source file.",
+    "noVideoMessage": "No video selected. Open a project from the site to play it here.",
+    "commentsLoadingMessage": "Loading comments...",
+    "commentsUnavailableMessage": "Comments are temporarily unavailable.",
+    "playButtonLabel": "Play video",
+    "pauseButtonLabel": "Pause video",
+    "muteButtonLabel": "Mute video",
+    "unmuteButtonLabel": "Unmute video",
+    "fullscreenButtonLabel": "Toggle fullscreen",
+    "timelineLabel": "Video timeline",
+    "volumeLabel": "Video volume",
+    "referenceAddedLabel": "Added to message",
+    "qualityAutoValue": "Auto · use player menu",
+    "qualitySourceValue": "Original source",
+    "currentVideoLabel": "Now playing",
+    "showChapters": false,
+    "chaptersTitle": "Editing Breakdown & Chapters",
+    "chaptersBadgeLabel": "Beats",
+    "showActiveTechnique": false,
+    "activeTechniquePrefix": "Active Technique:",
+    "showSoundShowcase": false,
+    "soundShowcaseTitle": "Sound Design Showcase",
+    "soundShowcaseSubtitle": "Toggle audio layers to inspect editing sound design",
+    "soundShowcaseFullMixLabel": "Full Mix",
+    "soundShowcaseSfxLabel": "Solo SFX & Voice",
+    "soundShowcaseBassLabel": "Cinema Bass"
   },
   "founder": {
     "name": "Dheeraj A",
@@ -168,10 +216,75 @@
     "description": "A curated library of published work, visuals, and client-ready edits from the CreativeXCreations portfolio.",
     "items": [
       {
+        "id": "d4cfda27-498f-4267-94aa-9d0130d135a2",
+        "title": "Untitled media",
+        "description": "",
+        "category": "Commercial",
+        "type": "video",
+        "sourceType": "upload",
+        "mediaUrl": "/uploads/1792422009064-Blue_commercial_video_produc__1080p_202608122314.mp4",
+        "thumbnailUrl": "",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "published": true,
+        "featured": true,
+        "createdAt": "2026-10-19T14:59:48.675Z",
+        "showMetrics": true,
+        "metrics": [
+          {
+            "id": "m1",
+            "label": "Retention",
+            "value": "74%",
+            "trend": "up"
+          },
+          {
+            "id": "m2",
+            "label": "Watch Time",
+            "value": "+3.2M",
+            "trend": "up"
+          },
+          {
+            "id": "m3",
+            "label": "Hook CTR",
+            "value": "+28%",
+            "trend": "up"
+          }
+        ],
+        "chapters": [
+          {
+            "id": "c1",
+            "time": 0,
+            "title": "Hook & Visual Intrigue",
+            "technique": "Dynamic kinetic typography + sound riser"
+          },
+          {
+            "id": "c2",
+            "time": 15,
+            "title": "Sound Design & Foley",
+            "technique": "Layered whooshes, tape stop, and sub impact"
+          },
+          {
+            "id": "c3",
+            "time": 32,
+            "title": "3D Graphics & Motion Flow",
+            "technique": "Camera tracking + depth-of-field blur"
+          },
+          {
+            "id": "c4",
+            "time": 55,
+            "title": "Climax & Brand Payoff",
+            "technique": "Fast-paced rhythmic montage + custom grade"
+          }
+        ]
+      },
+      {
         "id": "8945f694-9b64-47f6-ba26-7708d9d5fd25",
         "title": "Untitled media",
         "description": "",
-        "category": "General",
+        "category": "YouTube Long-form",
         "type": "video",
         "sourceType": "drive",
         "mediaUrl": "https://drive.google.com/file/d/1FkaGitIQ_1321Sl635NWG9UiLDCL5NjB/view?usp=sharing",
@@ -183,7 +296,54 @@
         },
         "published": true,
         "featured": true,
-        "createdAt": "2026-10-15T19:55:52.613Z"
+        "createdAt": "2026-10-15T19:55:52.613Z",
+        "showMetrics": true,
+        "metrics": [
+          {
+            "id": "m1",
+            "label": "Retention",
+            "value": "74%",
+            "trend": "up"
+          },
+          {
+            "id": "m2",
+            "label": "Watch Time",
+            "value": "+3.2M",
+            "trend": "up"
+          },
+          {
+            "id": "m3",
+            "label": "Hook CTR",
+            "value": "+28%",
+            "trend": "up"
+          }
+        ],
+        "chapters": [
+          {
+            "id": "c1",
+            "time": 0,
+            "title": "Hook & Visual Intrigue",
+            "technique": "Dynamic kinetic typography + sound riser"
+          },
+          {
+            "id": "c2",
+            "time": 15,
+            "title": "Sound Design & Foley",
+            "technique": "Layered whooshes, tape stop, and sub impact"
+          },
+          {
+            "id": "c3",
+            "time": 32,
+            "title": "3D Graphics & Motion Flow",
+            "technique": "Camera tracking + depth-of-field blur"
+          },
+          {
+            "id": "c4",
+            "time": 55,
+            "title": "Climax & Brand Payoff",
+            "technique": "Fast-paced rhythmic montage + custom grade"
+          }
+        ]
       },
       {
         "id": "library-video-1",
@@ -206,7 +366,54 @@
           "x": -14,
           "y": -33,
           "scale": 0.862
-        }
+        },
+        "showMetrics": true,
+        "metrics": [
+          {
+            "id": "m1",
+            "label": "Retention",
+            "value": "74%",
+            "trend": "up"
+          },
+          {
+            "id": "m2",
+            "label": "Watch Time",
+            "value": "+3.2M",
+            "trend": "up"
+          },
+          {
+            "id": "m3",
+            "label": "Hook CTR",
+            "value": "+28%",
+            "trend": "up"
+          }
+        ],
+        "chapters": [
+          {
+            "id": "c1",
+            "time": 0,
+            "title": "Hook & Visual Intrigue",
+            "technique": "Dynamic kinetic typography + sound riser"
+          },
+          {
+            "id": "c2",
+            "time": 15,
+            "title": "Sound Design & Foley",
+            "technique": "Layered whooshes, tape stop, and sub impact"
+          },
+          {
+            "id": "c3",
+            "time": 32,
+            "title": "3D Graphics & Motion Flow",
+            "technique": "Camera tracking + depth-of-field blur"
+          },
+          {
+            "id": "c4",
+            "time": 55,
+            "title": "Climax & Brand Payoff",
+            "technique": "Fast-paced rhythmic montage + custom grade"
+          }
+        ]
       },
       {
         "id": "library-video-2",
@@ -229,7 +436,54 @@
           "x": 381,
           "y": -56,
           "scale": 0.9179999999999999
-        }
+        },
+        "showMetrics": true,
+        "metrics": [
+          {
+            "id": "m1",
+            "label": "Retention",
+            "value": "74%",
+            "trend": "up"
+          },
+          {
+            "id": "m2",
+            "label": "Watch Time",
+            "value": "+3.2M",
+            "trend": "up"
+          },
+          {
+            "id": "m3",
+            "label": "Hook CTR",
+            "value": "+28%",
+            "trend": "up"
+          }
+        ],
+        "chapters": [
+          {
+            "id": "c1",
+            "time": 0,
+            "title": "Hook & Visual Intrigue",
+            "technique": "Dynamic kinetic typography + sound riser"
+          },
+          {
+            "id": "c2",
+            "time": 15,
+            "title": "Sound Design & Foley",
+            "technique": "Layered whooshes, tape stop, and sub impact"
+          },
+          {
+            "id": "c3",
+            "time": 32,
+            "title": "3D Graphics & Motion Flow",
+            "technique": "Camera tracking + depth-of-field blur"
+          },
+          {
+            "id": "c4",
+            "time": 55,
+            "title": "Climax & Brand Payoff",
+            "technique": "Fast-paced rhythmic montage + custom grade"
+          }
+        ]
       }
     ]
   },
@@ -246,17 +500,17 @@
     "toolLogos": [
       {
         "label": "Adobe Premiere Pro",
-        "src": "/uploads/1791923962622-vecteezy_adobe-premiere-pro-cc-icon-app-logo-editable-transparent_66118556_-_Cop.png",
+        "src": "/uploads/1792678443074-vecteezy_adobe-premiere-pro-cc-icon-app-logo-editable-transparent_66118556_-_Cop.png",
         "alt": "Adobe Premiere Pro logo"
       },
       {
         "label": "Adobe After Effects",
-        "src": "/uploads/1791923992083-vecteezy_adobe-after-effects-cc-icon-app-logo-editable-premium_65738851.jpg",
+        "src": "/uploads/1792678470142-vecteezy_adobe-after-effects-cc-icon-app-logo-editable-premium_65738851.jpg",
         "alt": "Adobe After Effects logo"
       },
       {
         "label": "CapCut",
-        "src": "/uploads/1791924011989-vecteezy_capcut-logo-on-transparent-white-background_13948546_-_Copy.jpg",
+        "src": "/uploads/1792678497613-vecteezy_capcut-logo-on-transparent-white-background_13948546_-_Copy.jpg",
         "alt": "CapCut logo"
       }
     ],

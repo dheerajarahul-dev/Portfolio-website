@@ -35,6 +35,21 @@ export interface ContactChannel {
   href: string;
 }
 
+export interface VideoChapter {
+  id?: string;
+  time: number; // in seconds
+  title: string; // e.g. "Sound Design Hook"
+  technique?: string; // e.g. "Layered Foley + Sub Bass Drop"
+  description?: string;
+}
+
+export interface RetentionMetric {
+  id?: string;
+  label: string; // e.g. "Avg View Duration", "Impressions"
+  value: string; // e.g. "74%", "+3.2M"
+  trend?: "up" | "neutral";
+}
+
 export interface MediaLibraryItem {
   id: string;
   title: string;
@@ -54,6 +69,9 @@ export interface MediaLibraryItem {
   featured: boolean;
   altText?: string;
   createdAt?: string;
+  chapters?: VideoChapter[];
+  showMetrics?: boolean;
+  metrics?: RetentionMetric[];
 }
 
 export interface PlayerSettings {
@@ -61,6 +79,54 @@ export interface PlayerSettings {
   description: string;
   backgroundUrl: string;
   accentColor: string;
+  showComments: boolean;
+  showSuggestions: boolean;
+  showPlaybackSettings: boolean;
+  showReferenceButton: boolean;
+  backButtonLabel: string;
+  speedLabel: string;
+  qualityLabel: string;
+  referenceButtonLabel: string;
+  commentsTitle: string;
+  commentsSortLabel: string;
+  commentsNewestLabel: string;
+  commentsOldestLabel: string;
+  commentNameLabel: string;
+  commentNamePlaceholder: string;
+  commentBodyLabel: string;
+  commentPlaceholder: string;
+  commentSubmitLabel: string;
+  commentsPrivacyNote: string;
+  commentsEmptyMessage: string;
+  suggestionsTitle: string;
+  suggestionsEmptyMessage: string;
+  youtubeQualityMessage: string;
+  sourceQualityMessage: string;
+  noVideoMessage: string;
+  commentsLoadingMessage: string;
+  commentsUnavailableMessage: string;
+  playButtonLabel: string;
+  pauseButtonLabel: string;
+  muteButtonLabel: string;
+  unmuteButtonLabel: string;
+  fullscreenButtonLabel: string;
+  timelineLabel: string;
+  volumeLabel: string;
+  referenceAddedLabel: string;
+  qualityAutoValue: string;
+  qualitySourceValue: string;
+  currentVideoLabel: string;
+  showChapters?: boolean;
+  chaptersTitle?: string;
+  chaptersBadgeLabel?: string;
+  showActiveTechnique?: boolean;
+  activeTechniquePrefix?: string;
+  showSoundShowcase?: boolean;
+  soundShowcaseTitle?: string;
+  soundShowcaseSubtitle?: string;
+  soundShowcaseFullMixLabel?: string;
+  soundShowcaseSfxLabel?: string;
+  soundShowcaseBassLabel?: string;
 }
 
 export interface FounderProfile {
@@ -128,6 +194,9 @@ export interface SiteContent {
   featuredWork: {
     eyebrow: string;
     title: string;
+    showCategories?: boolean;
+    showMetrics?: boolean;
+    categories?: string[];
   };
   whyChooseUs: {
     eyebrow: string;
@@ -217,6 +286,7 @@ export interface ContactMessage {
   createdAt: string;
   read: boolean;
   deletedAt?: string | null;
+  repliedAt?: string | null;
 }
 
 export type AdminUserRole = "owner" | "editor" | "media" | "messages";

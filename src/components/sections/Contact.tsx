@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Mail, Send, Loader2, AlertCircle, Inbox, CircleCheck, X } from "lucide-react";
+import { Mail, Send, Loader2, AlertCircle, Inbox, CircleCheck, X, Tag } from "lucide-react";
 import EditableText from "../edit/EditableText";
 import { useSiteContent } from "@/context/SiteContentContext";
 import { InstagramMark, YouTubeMark } from "@/components/ui/SocialMarks";
@@ -23,14 +23,16 @@ type SentMessageReceipt = {
   sentAt: string;
 };
 
-export default function Contact() {
+type VideoReference = { title: string; url: string };
+
+export default function Contact({ initialVideoReference = null }: { initialVideoReference?: VideoReference | null }) {
   const { content, editMode } = useSiteContent();
   const section = content.contact;
   const reduceMotion = useReducedMotion();
   const [form, setForm] = useState({
     name: "",
     email: "",
-    subject: "",
+    subject: initialVideoReference ? `Video inquiry: ${initialVideoReference.title}`.slice(0, 80) : "",
     projectType: content.contact.form.projectTypes[0] || "General",
     message: "",
   });
@@ -40,6 +42,7 @@ export default function Contact() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [sentMessages, setSentMessages] = useState<SentMessageReceipt[]>([]);
   const [sentBoxOpen, setSentBoxOpen] = useState(false);
+  const [videoReference, setVideoReference] = useState<VideoReference | null>(initialVideoReference);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -83,11 +86,19 @@ export default function Contact() {
       return;
     }
 
+    const messageText = form.message.trim();
+    const taggedMessage = videoReference
+      ? `${messageText}\n\nVideo reference: ${videoReference.title}\n${videoReference.url}`
+      : messageText;
+    if (taggedMessage.length > 5000) {
+      setErrorMessage("Please shorten your message so the attached video reference fits.");
+      return;
+    }
     const submittedMessage = {
       ...form,
       projectType: form.projectType === "Other" ? otherProjectType.trim() : form.projectType,
       subject: form.subject.trim(),
-      message: form.message.trim(),
+      message: taggedMessage,
     };
 
     setStatus("loading");
@@ -121,6 +132,7 @@ export default function Contact() {
         message: "",
       });
       setOtherProjectType("");
+      setVideoReference(null);
 
       if (successTimeoutRef.current) {
         clearTimeout(successTimeoutRef.current);
@@ -133,167 +145,199 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="scroll-mt-28 px-3 py-8 sm:px-5 sm:py-12 lg:scroll-mt-[5.375rem] lg:px-6 lg:py-1">
-      <div className="mx-auto grid max-w-[88rem] min-w-0 gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-6">
-        <div className="min-w-0 rounded-2xl border border-white/10 bg-[#111111]/85 p-5 shadow-2xl shadow-black/20 sm:rounded-[2rem] sm:p-8 lg:p-6">
-          <span className="mb-2 inline-flex rounded-full bg-purple-500/10 px-3 py-2 text-xs uppercase tracking-[0.22em] text-purple-200 sm:px-4 sm:text-sm sm:tracking-[0.35em]">
-            <EditableText path="contact.badge" value={section.badge} as="span" />
-          </span>
-          <h2 className="text-2xl font-semibold leading-tight tracking-normal text-white min-[390px]:text-3xl sm:text-5xl lg:text-[2rem]">
+    <section id="contact" className="scroll-mt-28 px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <div className="mx-auto grid max-w-7xl min-w-0 gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-10">
+        <div className="min-w-0 rounded-3xl border border-white/10 bg-[#0e0e14]/90 p-6 shadow-2xl backdrop-blur-2xl sm:p-10">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-purple-300">
+              <EditableText path="contact.badge" value={section.badge} as="span" />
+            </span>
+
+            {sentMessages.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSentBoxOpen((open) => !open)}
+                aria-expanded={sentBoxOpen}
+                aria-controls="contact-sent-box"
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 py-1 pl-2 pr-3 text-xs text-white/80 transition-colors hover:border-purple-400/50 hover:bg-white/10"
+              >
+                <Inbox className="h-3.5 w-3.5 text-purple-400" aria-hidden="true" />
+                <span>Sent ({sentMessages.length})</span>
+              </button>
+            )}
+          </div>
+
+          <h2 className="text-2xl font-bold tracking-tight text-white min-[390px]:text-3xl sm:text-4xl lg:text-5xl leading-[1.15]">
             <EditableText path="contact.title" value={section.title} as="span" />
           </h2>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-white/70 sm:mt-4 sm:text-base sm:leading-7 lg:mt-2 lg:text-sm lg:leading-6">
+          <p className="mt-3 text-sm leading-relaxed text-white/70 sm:text-base">
             <EditableText path="contact.description" value={section.description} as="span" multiline />
           </p>
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs leading-5 text-white/50 lg:whitespace-nowrap lg:text-[10px]">We’ll reply to the email address you provide, usually within two business days.</p>
-            <button
-              type="button"
-              onClick={() => setSentBoxOpen((open) => !open)}
-              aria-expanded={sentBoxOpen}
-              aria-controls="contact-sent-box"
-              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/10 bg-black/30 py-1 pl-1 pr-3 text-xs text-white/75 transition-colors hover:border-cyan-200/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            >
-              <span className="relative grid h-8 w-8 place-items-center rounded-full border border-cyan-200/20 bg-cyan-300/10 text-cyan-100">
-                <Inbox className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <span>Sent box</span>
-              <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] tabular-nums">{sentMessages.length}</span>
-            </button>
-          </div>
+
+          <p className="mt-2 text-xs text-white/45">
+            We reply directly to your provided email within 24–48 hours.
+          </p>
+
+          {videoReference && (
+            <div className="mt-5 flex min-w-0 items-start gap-3 rounded-2xl border border-purple-500/30 bg-purple-950/20 p-3.5">
+              <Tag className="mt-0.5 h-4 w-4 shrink-0 text-purple-400" aria-hidden="true" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-purple-300">Video reference attached</p>
+                <a href={videoReference.url} target="_blank" rel="noreferrer" className="mt-1 block break-all text-sm font-medium text-white underline decoration-purple-400/40 underline-offset-2 hover:text-purple-200">
+                  {videoReference.title}
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setVideoReference(null);
+                  setForm((current) => ({
+                    ...current,
+                    subject: current.subject === `Video inquiry: ${videoReference.title}`.slice(0, 80) ? "" : current.subject,
+                  }));
+                }}
+                aria-label="Remove attached video"
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white/50 hover:bg-white/10 hover:text-white"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
 
           {sentBoxOpen && (
             <section
               id="contact-sent-box"
               aria-label="Messages sent during this page session"
-              className="mt-3 w-full min-w-0 max-w-full space-y-3 overflow-hidden rounded-2xl border border-cyan-200/15 bg-[#090d10] p-3 sm:p-4"
+              className="mt-4 w-full min-w-0 space-y-3 overflow-hidden rounded-2xl border border-purple-500/20 bg-purple-950/20 p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-white">
-                  <Inbox className="h-4 w-4 text-cyan-100" aria-hidden="true" />
-                  Sent to CreativeXCreations
+                  <Inbox className="h-4 w-4 text-purple-400" aria-hidden="true" />
+                  Sent Messages in this Session
                 </h3>
                 <button
                   type="button"
                   onClick={() => setSentBoxOpen(false)}
                   aria-label="Close sent box"
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-white/60 hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                  className="grid h-7 w-7 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
-              {sentMessages.length === 0 ? (
-                <p className="rounded-xl border border-white/5 bg-white/[0.02] p-3 text-xs leading-5 text-white/55">
-                  Messages confirmed by the server will appear here for this page session.
-                </p>
-              ) : (
-                <div className="max-h-64 w-full min-w-0 space-y-2 overflow-x-hidden overflow-y-auto">
-                  {sentMessages.map((sentMessage) => (
-                    <article key={sentMessage.id} className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-white/10 bg-white/[0.025] p-3">
-                      <div className="flex items-start gap-2">
-                        <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" aria-hidden="true" />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                            <p className="min-w-0 break-all text-xs font-semibold text-white">{sentMessage.subject || sentMessage.projectType}</p>
-                            <time dateTime={sentMessage.sentAt} className="break-all text-[10px] text-white/45">{new Date(sentMessage.sentAt).toLocaleString()}</time>
-                          </div>
-                          <p className="mt-1 break-all text-[11px] text-white/55">From {sentMessage.name} · {sentMessage.email}</p>
-                          <p className="mt-2 whitespace-pre-wrap break-all text-xs leading-5 text-white/75">{sentMessage.message}</p>
+              <div className="max-h-60 space-y-2.5 overflow-y-auto pr-1">
+                {sentMessages.map((sentMessage) => (
+                  <article key={sentMessage.id} className="rounded-xl border border-white/10 bg-black/40 p-3">
+                    <div className="flex items-start gap-2.5">
+                      <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <p className="text-xs font-semibold text-white">{sentMessage.subject || sentMessage.projectType}</p>
+                          <time dateTime={sentMessage.sentAt} className="text-[10px] text-white/40">{new Date(sentMessage.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
                         </div>
+                        <p className="mt-1 text-xs text-white/70 line-clamp-2">{sentMessage.message}</p>
                       </div>
-                    </article>
-                  ))}
-                </div>
-              )}
+                    </div>
+                  </article>
+                ))}
+              </div>
             </section>
           )}
 
-          <form className="mt-6 space-y-4 sm:mt-8 sm:space-y-4 lg:mt-2 lg:space-y-1" onSubmit={submit}>
+          <form className="mt-8 space-y-5" onSubmit={submit}>
             <div className="pointer-events-none absolute left-[-10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
               <label>Website<input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} /></label>
             </div>
+            
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="flex flex-col gap-2 text-white/75 text-sm">
-                <EditableText path="contact.form.nameLabel" value={section.form.nameLabel} as="span" />
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                  <EditableText path="contact.form.nameLabel" value={section.form.nameLabel} as="span" />
+                </span>
                 <input
                   required
                   maxLength={120}
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  className="rounded-2xl border border-white/10 bg-[#050505] px-4 py-3 text-white outline-none transition focus:border-purple-400/80 focus:ring-2 focus:ring-purple-500/10 sm:rounded-3xl lg:py-2"
+                  className="rounded-xl border border-white/10 bg-[#08080c] px-4 py-3.5 text-sm text-white placeholder-white/30 transition focus:border-purple-400 focus:bg-[#0c0c14] focus:outline-none focus:ring-4 focus:ring-purple-500/15"
                   placeholder={section.form.namePlaceholder}
                 />
               </label>
-              <label className="flex flex-col gap-2 text-white/75 text-sm">
-                <EditableText path="contact.form.emailLabel" value={section.form.emailLabel} as="span" />
+              
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                  <EditableText path="contact.form.emailLabel" value={section.form.emailLabel} as="span" />
+                </span>
                 <input
                   required
                   type="email"
                   maxLength={254}
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  className="rounded-2xl border border-white/10 bg-[#050505] px-4 py-3 text-white outline-none transition focus:border-purple-400/80 focus:ring-2 focus:ring-purple-500/10 sm:rounded-3xl lg:py-2"
+                  className="rounded-xl border border-white/10 bg-[#08080c] px-4 py-3.5 text-sm text-white placeholder-white/30 transition focus:border-purple-400 focus:bg-[#0c0c14] focus:outline-none focus:ring-4 focus:ring-purple-500/15"
                   placeholder={section.form.emailPlaceholder}
                 />
               </label>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2 lg:gap-3">
-              <div className="space-y-4 lg:space-y-3">
-                <label className="flex flex-col gap-2 text-white/75 text-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-white/70">
                   <EditableText path="contact.form.projectTypeLabel" value={section.form.projectTypeLabel} as="span" />
-                  <select
-                    value={form.projectType}
-                    onChange={(e) => setForm((f) => ({ ...f, projectType: e.target.value }))}
-                    className="rounded-2xl border border-white/10 bg-[#050505] px-4 py-3 text-white outline-none transition focus:border-purple-400/80 focus:ring-2 focus:ring-purple-500/10 sm:rounded-3xl lg:py-2"
-                  >
-                    {section.form.projectTypes.map((projectType) => (
-                      <option key={projectType}>{projectType}</option>
-                    ))}
-                  </select>
                 </label>
+                <select
+                  value={form.projectType}
+                  onChange={(e) => setForm((f) => ({ ...f, projectType: e.target.value }))}
+                  className="rounded-xl border border-white/10 bg-[#08080c] px-4 py-3.5 text-sm text-white outline-none transition focus:border-purple-400 focus:bg-[#0c0c14] focus:ring-4 focus:ring-purple-500/15 cursor-pointer"
+                >
+                  {section.form.projectTypes.map((projectType) => (
+                    <option key={projectType} value={projectType} className="bg-[#111] text-white">
+                      {projectType}
+                    </option>
+                  ))}
+                </select>
                 {form.projectType === "Other" && (
-                  <label className="flex flex-col gap-2 text-sm text-white/75">
-                    Describe your project type
-                    <input
-                      required
-                      value={otherProjectType}
-                      onChange={(event) => setOtherProjectType(event.target.value)}
-                      maxLength={80}
-                      className="rounded-xl border border-white/10 bg-[#050505] px-4 py-3 text-white outline-none focus:border-purple-400/80 sm:rounded-2xl lg:py-2"
-                      placeholder="For example: Product launch film"
-                    />
-                  </label>
+                  <input
+                    required
+                    value={otherProjectType}
+                    onChange={(event) => setOtherProjectType(event.target.value)}
+                    maxLength={80}
+                    className="mt-2 rounded-xl border border-white/10 bg-[#08080c] px-4 py-3 text-sm text-white outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/15"
+                    placeholder="Describe your project (e.g. Docuseries, Brand Film)"
+                  />
                 )}
               </div>
 
-              <label className="flex flex-col gap-2 text-white/75 text-sm">
-                <EditableText path="contact.form.subjectLabel" value={section.form.subjectLabel} as="span" />
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                  <EditableText path="contact.form.subjectLabel" value={section.form.subjectLabel} as="span" />
+                </span>
                 <input
                   maxLength={80}
                   value={form.subject}
                   onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-                  className="rounded-2xl border border-white/10 bg-[#050505] px-4 py-3 text-white outline-none transition focus:border-purple-400/80 focus:ring-2 focus:ring-purple-500/10 sm:rounded-3xl lg:py-2"
+                  className="rounded-xl border border-white/10 bg-[#08080c] px-4 py-3.5 text-sm text-white placeholder-white/30 transition focus:border-purple-400 focus:bg-[#0c0c14] focus:outline-none focus:ring-4 focus:ring-purple-500/15"
                   placeholder={section.form.subjectPlaceholder}
                 />
               </label>
             </div>
 
-            <label className="flex flex-col gap-2 text-white/75 text-sm">
-              <EditableText path="contact.form.messageLabel" value={section.form.messageLabel} as="span" />
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                <EditableText path="contact.form.messageLabel" value={section.form.messageLabel} as="span" />
+              </span>
               <textarea
                 required
-                rows={3}
+                rows={4}
                 maxLength={5000}
                 value={form.message}
                 onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                className="rounded-2xl border border-white/10 bg-[#050505] px-4 py-3 text-white outline-none transition focus:border-purple-400/80 focus:ring-2 focus:ring-purple-500/10 sm:rounded-3xl lg:h-16 lg:py-2"
+                className="w-full rounded-xl border border-white/10 bg-[#08080c] px-4 py-3.5 text-sm text-white placeholder-white/30 transition focus:border-purple-400 focus:bg-[#0c0c14] focus:outline-none focus:ring-4 focus:ring-purple-500/15 min-h-[120px] resize-y"
                 placeholder={section.form.messagePlaceholder}
               />
             </label>
 
             {editMode ? (
-              <div className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-purple-500 px-6 py-4 text-sm font-semibold text-white">
+              <div className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-purple-600 px-6 py-4 text-sm font-semibold text-white">
                 <EditableText
                   path="contact.form.submitLabel"
                   value={section.form.submitLabel}
@@ -307,7 +351,11 @@ export default function Contact() {
                 disabled={status === "loading" || status === "success"}
                 aria-live="polite"
                 aria-atomic="true"
-                className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold text-white transition disabled:cursor-default disabled:opacity-100 ${status === "success" ? "bg-emerald-700" : "bg-purple-500 hover:bg-purple-400 disabled:opacity-60"}`}
+                className={`inline-flex min-h-12 w-full items-center justify-center gap-2.5 rounded-xl px-7 py-4 text-sm font-bold text-white shadow-lg transition active:scale-[0.99] cursor-pointer ${
+                  status === "success"
+                    ? "bg-emerald-600 shadow-emerald-600/30"
+                    : "bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 shadow-purple-600/30 hover:brightness-110 hover:shadow-purple-600/50 disabled:opacity-60"
+                }`}
               >
                 {status === "loading" ? (
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -318,37 +366,40 @@ export default function Contact() {
                     transition={{ duration: 0.45, ease: "easeOut" }}
                     className="inline-flex items-center gap-2"
                   >
-                    <Inbox className="h-4 w-4" aria-hidden="true" />
+                    <CircleCheck className="h-4 w-4 text-emerald-200" aria-hidden="true" />
                     <EditableText path="contact.form.successMessage" value={section.form.successMessage} as="span" />
                   </motion.span>
                 ) : (
-                  <><Send className="h-4 w-4" aria-hidden="true" /><span>{section.form.submitLabel}</span></>
+                  <>
+                    <Send className="h-4 w-4 text-purple-200" aria-hidden="true" />
+                    <span>{section.form.submitLabel}</span>
+                  </>
                 )}
               </button>
             )}
 
             {status === "error" && errorMessage && (
-              <p
-                role="alert"
-                className="flex items-center gap-2 text-sm text-red-400"
-              >
-                <AlertCircle className="h-4 w-4" /> {errorMessage}
+              <p role="alert" className="flex items-center gap-2 text-sm text-red-400">
+                <AlertCircle className="h-4 w-4 shrink-0" /> {errorMessage}
               </p>
             )}
           </form>
         </div>
 
-        <div className="min-w-0 space-y-4 rounded-2xl border border-white/10 bg-[#111111]/85 p-5 shadow-2xl shadow-black/20 sm:space-y-5 sm:rounded-[2rem] sm:p-8 lg:p-6">
-          <p className="text-xs uppercase tracking-[0.22em] text-purple-300/80 sm:text-sm sm:tracking-[0.35em]">
-            <EditableText path="contact.directTitle" value={section.directTitle} as="span" />
-          </p>
-          <h3 className="text-2xl font-semibold leading-tight text-white sm:text-3xl">
-            <EditableText path="contact.directHeading" value={section.directHeading} as="span" />
-          </h3>
-          <p className="text-sm leading-6 text-white/70 sm:text-base sm:leading-7">
-            <EditableText path="contact.directDescription" value={section.directDescription} as="span" multiline />
-          </p>
-          <div className="grid gap-4">
+        <div className="flex flex-col justify-between rounded-3xl border border-white/10 bg-[#0e0e14]/90 p-6 shadow-2xl backdrop-blur-2xl sm:p-10">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-purple-300 mb-4">
+              <EditableText path="contact.directTitle" value={section.directTitle} as="span" />
+            </span>
+            <h3 className="text-2xl font-bold tracking-tight text-white sm:text-3xl leading-snug">
+              <EditableText path="contact.directHeading" value={section.directHeading} as="span" />
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-white/70 sm:text-base">
+              <EditableText path="contact.directDescription" value={section.directDescription} as="span" multiline />
+            </p>
+          </div>
+
+          <div className="mt-8 space-y-3">
             {section.channels.map((contact) => {
               const Icon = channelIcons[contact.label] ?? Mail;
               return (
@@ -357,19 +408,19 @@ export default function Contact() {
                   href={contact.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="group flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 hover:border-purple-300/20 hover:bg-purple-500/10 sm:rounded-3xl sm:px-5 sm:py-4"
+                  className="group flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition duration-200 hover:border-purple-500/40 hover:bg-purple-600/10 cursor-pointer"
                 >
-                  <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-300 sm:h-11 sm:w-11 sm:rounded-3xl">
+                  <div className="flex min-w-0 items-center gap-3.5">
+                    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-500/15 text-purple-300 transition group-hover:bg-purple-500/25 group-hover:text-purple-200">
                       <Icon className="h-5 w-5" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white">{contact.label}</p>
-                      <p className="truncate text-sm text-white/70">{contact.value}</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-white/50">{contact.label}</p>
+                      <p className="truncate text-sm font-medium text-white">{contact.value}</p>
                     </div>
                   </div>
-                  <span className="shrink-0 text-sm text-purple-300 group-hover:text-white">
-                    <EditableText path="contact.channelAction" value={section.channelAction} as="span" />
+                  <span className="shrink-0 text-xs font-semibold text-purple-400 group-hover:text-white transition">
+                    <EditableText path="contact.channelAction" value={section.channelAction} as="span" /> →
                   </span>
                 </a>
               );

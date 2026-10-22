@@ -21,7 +21,7 @@ export default function Navbar() {
   const [activeSection, setActiveSection] = useState("");
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
 
-  const brandText = (content.navbar.brandName || "CREATIVEXCREATIONS").replace(/X/gi, " X ");
+  const brandText = (content.navbar.brandName || "CREATIVEXCREATIONS").replace(/\s*x\s*/gi, " X ");
   const logoSrc = content.navbar.logoUrl || LOGO_SRC;
   const navItems = content.navbar.links;
   const displayedActiveSection = pathname === "/" ? activeSection : "";
@@ -32,10 +32,10 @@ export default function Navbar() {
       </div>
       <EditableText
         path="navbar.brandName"
-        value={content.navbar.brandName || brandText}
+        value={brandText}
         as="span"
         highlightX
-        className="truncate font-space text-[0.68rem] font-bold tracking-[0.16em] text-white sm:text-[0.8rem]"
+        className="inline-flex shrink-0 items-center font-space text-[0.68rem] font-bold tracking-[0.16em] text-white sm:text-[0.8rem]"
       />
     </>
   );
@@ -129,14 +129,14 @@ export default function Navbar() {
               isScrolled ? "bg-[#0d0d11]/82" : "bg-[#0d0d11]/32"
             }`}
           >
-            <div className="flex min-w-0 items-center justify-start">
+            <div className="flex shrink-0 items-center justify-start">
               {editMode ? (
-                <div className="flex min-w-0 items-center gap-2 px-1 py-1 text-left sm:gap-3">{brandContent}</div>
+                <div className="flex items-center gap-2 px-1 py-1 text-left sm:gap-3">{brandContent}</div>
               ) : (
                 <button
                   type="button"
                   onClick={handleHomeOrTop}
-                  className="flex min-w-0 items-center gap-2 rounded-full px-1 py-1 text-left outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-purple-400/80 sm:gap-3"
+                  className="flex items-center gap-2 rounded-full px-1 py-1 text-left outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-purple-400/80 sm:gap-3 cursor-pointer"
                   aria-label="Go to the homepage"
                 >
                   {brandContent}
@@ -179,6 +179,13 @@ export default function Navbar() {
             </nav>
 
             <div className="flex items-center justify-end gap-2">
+              <Link
+                href="/studio/login"
+                className="hidden items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[0.68rem] font-medium text-zinc-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white sm:text-xs md:inline-flex"
+              >
+                Studio
+              </Link>
+
               <button
                 type="button"
                 onClick={() => handleNavigation("#contact")}
@@ -252,6 +259,21 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+              <Link
+                href="/studio/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-left text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+              >
+                Studio Login
+              </Link>
+              <button
+                type="button"
+                onClick={() => handleNavigation("#contact")}
+                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#7C3AED] px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-[0_0_20px_rgba(124,58,237,0.32)] transition hover:bg-[#8b5cf6]"
+              >
+                <span>{content.navbar.contactLabel || "Get in Touch"}</span>
+                <ArrowUpRight className="h-4 w-4" />
+              </button>
             </nav>
           </motion.div>
         )}

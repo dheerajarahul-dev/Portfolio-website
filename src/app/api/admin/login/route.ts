@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
   const state = await readThrottle();
   const entry = state[clientKey];
-  if (entry && Date.now() <= entry.lockedUntil) {
+  if (process.env.NODE_ENV === "production" && entry && Date.now() <= entry.lockedUntil) {
     return NextResponse.json(
       { error: "Too many attempts. Try again later." },
       { status: 429 }

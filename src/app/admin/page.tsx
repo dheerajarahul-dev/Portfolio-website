@@ -26,14 +26,22 @@ import {
   Users,
   HardDrive,
   Square,
+  Bookmark,
+  TrendingUp,
+  Sparkles,
+  Clock,
+  Volume2,
+  Headphones,
 } from "lucide-react";
-import type { AdminPermission, AdminUser, AdminUserRole, ContactMessage, MediaLibraryItem, SiteContent } from "@/lib/types";
+import type { AdminPermission, AdminUser, AdminUserRole, ContactMessage, MediaLibraryItem, SiteContent, VideoChapter, RetentionMetric } from "@/lib/types";
 import { ADMIN_ROLE_PERMISSIONS, getAdminRolePermissions } from "@/lib/admin-permissions";
 import { defaultContent } from "@/lib/default-content";
 import { extractYoutubeId } from "@/lib/youtube";
 import { getMediaKind, getMediaThumbnailUrl, getYoutubeIdFromUrl, isGoogleDriveUrl, youtubeThumbnail } from "@/lib/media";
 import FileUploadField from "@/components/admin/FileUploadField";
 import VideoPlayerPreview from "@/components/admin/VideoPlayerPreview";
+import MessageReplyComposer from "@/components/admin/MessageReplyComposer";
+import { analyzeMessage } from "@/lib/message-ai";
 
 type Tab = "overview" | "media" | "storage" | "edit" | "messages" | "accounts" | "settings";
 type StorageAsset = { name: string; url: string; size: number; contentType: string; referenced: boolean };
@@ -114,6 +122,67 @@ function SelectField({
       </select>
     </label>
   );
+}
+
+function ToggleField({
+  label,
+  checked,
+  onChange,
+  description,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  description?: string;
+}) {
+  return (
+    <div
+      onClick={() => onChange(!checked)}
+      className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#0c0c12] p-3 text-sm text-white transition hover:border-purple-500/30 cursor-pointer select-none"
+    >
+      <div className="min-w-0 pr-2">
+        <span className="block font-medium text-white/90 text-xs sm:text-sm">{label}</span>
+        {description && <span className="block text-[11px] text-white/40 mt-0.5">{description}</span>}
+      </div>
+
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={(e) => {
+          e.stopPropagation();
+          onChange(!checked);
+        }}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 cursor-pointer ${
+          checked ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-sm shadow-purple-600/40" : "bg-white/15"
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition duration-200 ease-in-out ${
+            checked ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+function formatChapterTime(sec: number): string {
+  if (!sec || isNaN(sec)) return "00:00";
+  const mins = Math.floor(sec / 60);
+  const secs = Math.floor(sec % 60);
+  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+}
+
+function parseChapterTime(str: string): number {
+  if (!str) return 0;
+  const parts = str.trim().split(":");
+  if (parts.length === 2) {
+    const mins = parseInt(parts[0], 10) || 0;
+    const secs = parseInt(parts[1], 10) || 0;
+    return mins * 60 + secs;
+  }
+  return parseInt(str, 10) || 0;
 }
 
 function getMediaPreviewUrl(item: MediaLibraryItem) {
@@ -302,11 +371,29 @@ function MediaEditorModal({
                 multiline
               />
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field
-                  label="Category"
-                  value={draft.category}
-                  onChange={(v) => updateDraft({ category: v })}
-                />
+                <div>
+                  <Field
+                    label="Category"
+                    value={draft.category}
+                    onChange={(v) => updateDraft({ category: v })}
+                  />
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {["YouTube Long-form", "TikTok & Reels", "Talking Head", "Commercial & Ads", "Documentary"].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => updateDraft({ category: cat })}
+                        className={`rounded px-1.5 py-0.5 text-[10px] transition-colors ${
+                          draft.category === cat
+                            ? "bg-purple-600 text-white font-medium"
+                            : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <SelectField
                   label="Media type"
                   value={draft.type}
@@ -480,6 +567,201 @@ function MediaEditorModal({
               <p className="text-xs text-white/45">Featured videos are published automatically so they can appear on the homepage.</p>
             </section>
 
+            {draft.type === "video" && (
+              <>
+                {/* Interactive Video Chapters & Timeline Markers */}
+                <section className="space-y-3 rounded-2xl border border-white/10 bg-black/25 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-purple-400" />
+                      <h4 className="text-sm font-semibold text-white">Interactive Video Chapters</h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = draft.chapters || [];
+                        updateDraft({
+                          chapters: [
+                            ...current,
+                            { id: `ch-${Date.now()}`, time: 0, title: "Key Beat", technique: "Editing Technique" },
+                          ],
+                        });
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-xs font-semibold text-purple-200 hover:bg-purple-500/20"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Add Chapter Beat
+                    </button>
+                  </div>
+                  <p className="text-xs text-white/45">
+                    Clickable timeline markers allowing visitors and prospective clients to jump straight to key moments and inspect editing techniques.
+                  </p>
+
+                  <div className="space-y-2.5 pt-1">
+                    {(draft.chapters || []).map((ch, idx) => (
+                      <div key={ch.id || idx} className="grid grid-cols-[70px_1fr_1fr_auto] items-center gap-2 rounded-xl border border-white/10 bg-[#0a0a0a] p-2.5">
+                        <div>
+                          <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">Timestamp</label>
+                          <input
+                            type="text"
+                            defaultValue={formatChapterTime(ch.time)}
+                            key={`${ch.id || idx}-${ch.time}`}
+                            placeholder="00:15"
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs font-mono text-purple-300 focus:border-purple-500 focus:outline-none"
+                            onBlur={(e) => {
+                              const newCh = [...(draft.chapters || [])];
+                              newCh[idx] = { ...newCh[idx], time: parseChapterTime(e.target.value) };
+                              updateDraft({ chapters: newCh });
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                const newCh = [...(draft.chapters || [])];
+                                newCh[idx] = { ...newCh[idx], time: parseChapterTime((e.target as HTMLInputElement).value) };
+                                updateDraft({ chapters: newCh });
+                              }
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">Chapter Title</label>
+                          <input
+                            type="text"
+                            value={ch.title}
+                            placeholder="e.g. Sound Hook"
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white focus:border-purple-500 focus:outline-none"
+                            onChange={(e) => {
+                              const newCh = [...(draft.chapters || [])];
+                              newCh[idx] = { ...newCh[idx], title: e.target.value };
+                              updateDraft({ chapters: newCh });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">Technique Used</label>
+                          <input
+                            type="text"
+                            value={ch.technique || ""}
+                            placeholder="e.g. Foley + Risers"
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-amber-200 focus:border-purple-500 focus:outline-none"
+                            onChange={(e) => {
+                              const newCh = [...(draft.chapters || [])];
+                              newCh[idx] = { ...newCh[idx], technique: e.target.value };
+                              updateDraft({ chapters: newCh });
+                            }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newCh = (draft.chapters || []).filter((_, i) => i !== idx);
+                            updateDraft({ chapters: newCh });
+                          }}
+                          className="mt-4 inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10"
+                          aria-label="Remove chapter"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    {(!draft.chapters || draft.chapters.length === 0) && (
+                      <p className="rounded-xl border border-dashed border-white/10 p-3 text-center text-xs text-white/40">
+                        No chapters added yet. Add beats to let clients jump through highlights (e.g., 00:15 Sound Design Hook, 00:45 3D Motion).
+                      </p>
+                    )}
+                  </div>
+                </section>
+
+                {/* Client Retention & Analytics Proof Cards */}
+                <section className="space-y-3 rounded-2xl border border-white/10 bg-black/25 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-emerald-400" />
+                      <h4 className="text-sm font-semibold text-white">Retention & Performance Badges</h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = draft.metrics || [];
+                        updateDraft({
+                          metrics: [
+                            ...current,
+                            { id: `m-${Date.now()}`, label: "Avg Retention", value: "72%" },
+                          ],
+                        });
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Add Metric Badge
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-white/45">
+                      Display proven performance metrics under the video card on the portfolio.
+                    </p>
+                    <label className="flex items-center gap-2 text-xs text-white/80">
+                      <input
+                        type="checkbox"
+                        className="admin-checkbox"
+                        checked={draft.showMetrics !== false}
+                        onChange={(e) => updateDraft({ showMetrics: e.target.checked })}
+                      />
+                      Visible
+                    </label>
+                  </div>
+
+                  <div className="space-y-2.5 pt-1">
+                    {(draft.metrics || []).map((m, idx) => (
+                      <div key={idx} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2 rounded-xl border border-white/10 bg-[#0a0a0a] p-2.5">
+                        <div>
+                          <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">Metric Label</label>
+                          <input
+                            type="text"
+                            value={m.label}
+                            placeholder="e.g. Avg Retention"
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white focus:border-purple-500 focus:outline-none"
+                            onChange={(e) => {
+                              const newM = [...(draft.metrics || [])];
+                              newM[idx] = { ...newM[idx], label: e.target.value };
+                              updateDraft({ metrics: newM });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">Value / Statistic</label>
+                          <input
+                            type="text"
+                            value={m.value}
+                            placeholder="e.g. 74% or +3.2M"
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs font-semibold text-emerald-300 focus:border-purple-500 focus:outline-none"
+                            onChange={(e) => {
+                              const newM = [...(draft.metrics || [])];
+                              newM[idx] = { ...newM[idx], value: e.target.value };
+                              updateDraft({ metrics: newM });
+                            }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newM = (draft.metrics || []).filter((_, i) => i !== idx);
+                            updateDraft({ metrics: newM });
+                          }}
+                          className="mt-4 inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10"
+                          aria-label="Remove metric"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    {(!draft.metrics || draft.metrics.length === 0) && (
+                      <p className="rounded-xl border border-dashed border-white/10 p-3 text-center text-xs text-white/40">
+                        No performance badges added yet. (e.g. &ldquo;Avg Retention: 74%&rdquo;, &ldquo;Impressions: +3.2M&rdquo;, &ldquo;Hook Rate: +28%&rdquo;).
+                      </p>
+                    )}
+                  </div>
+                </section>
+              </>
+            )}
+
             <details className="rounded-2xl border border-white/10 bg-black/25 p-4">
               <summary className="cursor-pointer text-sm font-semibold text-white">
                 Advanced Settings
@@ -591,8 +873,8 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const [username, setUsername] = useState("dheeraj_a");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("dheeraj@gmail.com");
+  const [password, setPassword] = useState("dheeraj1213");
   const [loginError, setLoginError] = useState("");
   const [accountUsername, setAccountUsername] = useState("");
   const [accountPassword, setAccountPassword] = useState("");
@@ -603,6 +885,8 @@ export default function AdminPage() {
   const [accountPasswordDrafts, setAccountPasswordDrafts] = useState<Record<string, string>>({});
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [replyMessageId, setReplyMessageId] = useState<string | null>(null);
+  const [expandedMessageIds, setExpandedMessageIds] = useState<string[]>([]);
   const [refreshingMessages, setRefreshingMessages] = useState(false);
   const [messageFilter, setMessageFilter] = useState<"all" | "read" | "unread">("all");
   const [messageView, setMessageView] = useState<"inbox" | "trash">("inbox");
@@ -881,18 +1165,6 @@ export default function AdminPage() {
     } finally {
       setClearingCache(false);
     }
-  };
-
-  const openGmailReply = (message: ContactMessage) => {
-    const subject = message.subject || message.projectType || "Project inquiry";
-    const body = `Hi ${message.name},\n\nThanks for reaching out about your ${message.projectType.toLowerCase()} project.\n\nOriginal message:\n${message.message}\n\nBest,\nCreativeXCreations`;
-    const gmailUrl = new URL("https://mail.google.com/mail/");
-    gmailUrl.searchParams.set("view", "cm");
-    gmailUrl.searchParams.set("fs", "1");
-    gmailUrl.searchParams.set("to", message.email);
-    gmailUrl.searchParams.set("su", `Re: ${subject}`);
-    gmailUrl.searchParams.set("body", body);
-    window.open(gmailUrl.toString(), "_blank", "noopener,noreferrer");
   };
 
   const markRead = async (id: string, read: boolean) => {
@@ -1190,6 +1462,15 @@ export default function AdminPage() {
     [items[firstIndex], items[secondIndex]] = [items[secondIndex], items[firstIndex]];
     await persistContent({ ...content, mediaLibrary: { ...content.mediaLibrary, items } });
   };
+
+  const livePlayerItem = content.mediaLibrary.items.find(
+    (item) => item.published && item.type === "video" && item.mediaUrl.trim() && item.title.trim() && !/^untitled media$/i.test(item.title.trim())
+  );
+  const livePlayerParams = new URLSearchParams({ edit: "1" });
+  if (livePlayerItem) {
+    livePlayerParams.set("videoUrl", livePlayerItem.mediaUrl);
+    livePlayerParams.set("title", livePlayerItem.title);
+  }
 
   if (authenticated === null) {
     return (
@@ -1775,13 +2056,23 @@ export default function AdminPage() {
                     Update copy, branding, showcase video, pricing plans, and contact details. Or use the visual live editor.
                   </p>
                 </div>
-                <Link
-                  href="/?edit=1"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-400/40 bg-purple-600/20 px-4 py-2.5 text-sm font-semibold text-purple-100 hover:bg-purple-600/35"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Open Live Editor
-                </Link>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href="/?edit=1"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-400/40 bg-purple-600/20 px-4 py-2.5 text-sm font-semibold text-purple-100 hover:bg-purple-600/35"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit Home Live
+                  </Link>
+                  <Link
+                    href={`/player?${livePlayerParams.toString()}`}
+                    target="_blank"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-200/25 bg-cyan-200/10 px-4 py-2.5 text-sm font-semibold text-cyan-100 hover:bg-cyan-200/15"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Live-edit Player
+                  </Link>
+                </div>
               </div>
 
               {/* Hero & Branding */}
@@ -1979,6 +2270,96 @@ export default function AdminPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </details>
+
+              {/* Featured Work & Portfolio Controls */}
+              <details className="group rounded-2xl border border-white/10 bg-[#111] overflow-hidden">
+                <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-white hover:bg-white/5 flex items-center justify-between list-none">
+                  Featured Work & Portfolio Controls
+                  <ChevronDown className="h-4 w-4 text-white/50 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="space-y-4 px-5 pb-5 border-t border-white/5 pt-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field
+                      label="Section Eyebrow"
+                      value={content.featuredWork?.eyebrow ?? "Handpicked Edits"}
+                      onChange={(v) =>
+                        setContent((c) => ({
+                          ...c,
+                          featuredWork: { ...c.featuredWork, eyebrow: v, title: c.featuredWork?.title ?? "" },
+                        }))
+                      }
+                    />
+                    <Field
+                      label="Section Title"
+                      value={content.featuredWork?.title ?? "High-Retention Visuals That Scale Channels & Brands"}
+                      onChange={(v) =>
+                        setContent((c) => ({
+                          ...c,
+                          featuredWork: { ...c.featuredWork, title: v, eyebrow: c.featuredWork?.eyebrow ?? "" },
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <ToggleField
+                      label="Enable Category Filter Pills (Fluid animated re-sorting)"
+                      checked={content.featuredWork?.showCategories ?? true}
+                      onChange={(checked) =>
+                        setContent((c) => ({
+                          ...c,
+                          featuredWork: {
+                            ...c.featuredWork,
+                            eyebrow: c.featuredWork?.eyebrow ?? "",
+                            title: c.featuredWork?.title ?? "",
+                            showCategories: checked,
+                          },
+                        }))
+                      }
+                    />
+                    <ToggleField
+                      label="Display Retention & Performance Badges on Video Cards"
+                      checked={content.featuredWork?.showMetrics ?? true}
+                      onChange={(checked) =>
+                        setContent((c) => ({
+                          ...c,
+                          featuredWork: {
+                            ...c.featuredWork,
+                            eyebrow: c.featuredWork?.eyebrow ?? "",
+                            title: c.featuredWork?.title ?? "",
+                            showMetrics: checked,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-white/50">
+                      Portfolio Filter Categories (Comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={(content.featuredWork?.categories ?? []).join(", ")}
+                      onChange={(e) => {
+                        const cats = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
+                        setContent((c) => ({
+                          ...c,
+                          featuredWork: {
+                            ...c.featuredWork,
+                            eyebrow: c.featuredWork?.eyebrow ?? "",
+                            title: c.featuredWork?.title ?? "",
+                            categories: cats,
+                          },
+                        }));
+                      }}
+                      placeholder="All, YouTube Long-form, TikTok & Reels, Talking Head, Commercial & Ads, Documentary"
+                      className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder-white/30 focus:border-purple-500 focus:outline-none"
+                    />
+                    <p className="text-xs text-white/40">
+                      Categories visitors can filter by on the homepage portfolio. Assign matching categories to media items in the Media Library.
+                    </p>
                   </div>
                 </div>
               </details>
@@ -2455,6 +2836,226 @@ export default function AdminPage() {
                     value={content.player.accentColor}
                     onChange={(v) => setContent((c) => ({ ...c, player: { ...c.player, accentColor: v } }))}
                   />
+                  {/* SOUND DESIGN SHOWCASE & CHAPTERS RIBBON FULL CUSTOMIZATION HUB */}
+                  <div className="rounded-2xl border border-purple-500/30 bg-gradient-to-b from-[#141222] to-[#0c0c14] p-4 sm:p-6 space-y-6 shadow-2xl">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-purple-500/20 pb-4">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-600/20 text-purple-400">
+                          <Headphones className="h-5 w-5" />
+                        </span>
+                        <div>
+                          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                            Sound Design Showcase & Chapters Sliders
+                            <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[10px] font-semibold text-purple-300">
+                              Interactive Player
+                            </span>
+                          </h3>
+                          <p className="text-xs text-white/55">
+                            Enable or disable feature ribbons and fully customize titles, audio tracks, and breakdown labels.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enable / Disable Sliders */}
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <ToggleField
+                        label="Sound Design Showcase"
+                        description="Audio layer inspection (Full Mix, Solo SFX, Bass)"
+                        checked={content.player.showSoundShowcase ?? true}
+                        onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showSoundShowcase: checked } }))}
+                      />
+                      <ToggleField
+                        label="Chapters & Timeline Breakdown"
+                        description="Key moments, technique callouts & beat jumpers"
+                        checked={content.player.showChapters ?? true}
+                        onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showChapters: checked } }))}
+                      />
+                      <ToggleField
+                        label="Active Technique Callout"
+                        description="Displays active editing technique for current beat"
+                        checked={content.player.showActiveTechnique ?? true}
+                        onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showActiveTechnique: checked } }))}
+                      />
+                    </div>
+
+                    {/* Live Visual Preview of the Two Sliders */}
+                    <div className="space-y-2 rounded-xl border border-white/10 bg-black/50 p-3 sm:p-4">
+                      <div className="flex items-center justify-between text-[11px] text-white/40 pb-1 border-b border-white/5">
+                        <span className="font-semibold uppercase tracking-wider text-purple-300">Live Player Ribbon Preview</span>
+                        <span>Updates in real-time</span>
+                      </div>
+
+                      {/* Preview: Sound Showcase */}
+                      {content.player.showSoundShowcase !== false ? (
+                        <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-purple-500/30 bg-[#0e0e16] px-3.5 py-2.5 shadow-md">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-purple-600/20 text-purple-300">
+                              <Headphones className="h-3.5 w-3.5" />
+                            </span>
+                            <div>
+                              <h4 className="text-[11px] font-bold uppercase tracking-wider text-white">
+                                {content.player.soundShowcaseTitle || "SOUND DESIGN SHOWCASE"}
+                              </h4>
+                              <p className="text-[10px] text-white/50">
+                                {content.player.soundShowcaseSubtitle || "Toggle audio layers to inspect editing sound design"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-black/60 p-0.5">
+                            <span className="rounded-md bg-purple-600 px-2.5 py-1 text-[10px] font-medium text-white shadow-sm">
+                              {content.player.soundShowcaseFullMixLabel || "Full Mix"}
+                            </span>
+                            <span className="rounded-md px-2.5 py-1 text-[10px] font-medium text-white/60">
+                              {content.player.soundShowcaseSfxLabel || "Solo SFX & Voice"}
+                            </span>
+                            <span className="rounded-md px-2.5 py-1 text-[10px] font-medium text-white/60">
+                              {content.player.soundShowcaseBassLabel || "Cinema Bass"}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-white/10 p-2.5 text-center text-xs text-white/40">
+                          Sound Design Showcase Ribbon is currently disabled.
+                        </div>
+                      )}
+
+                      {/* Preview: Chapters */}
+                      {content.player.showChapters !== false ? (
+                        <div className="space-y-2 rounded-xl border border-white/10 bg-[#0e0e16] p-3 shadow-md">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <Bookmark className="h-3.5 w-3.5 text-purple-400" />
+                              <span className="text-xs font-semibold text-white">
+                                {content.player.chaptersTitle || "Editing Breakdown & Chapters"}
+                              </span>
+                              <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[9px] font-medium text-purple-300">
+                                4 {content.player.chaptersBadgeLabel || "Beats"}
+                              </span>
+                            </div>
+                            <span className="rounded-full border border-purple-500/30 bg-purple-950/40 px-2.5 py-0.5 text-[10px] text-purple-300">
+                              0:00 · Hook & Visual Intrigue
+                            </span>
+                          </div>
+
+                          {content.player.showActiveTechnique !== false && (
+                            <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-950/30 px-2.5 py-1.5 text-[11px] text-purple-200">
+                              <Sparkles className="h-3 w-3 text-purple-400" />
+                              <span>
+                                <strong className="text-white">{content.player.activeTechniquePrefix || "Active Technique:"}</strong> Dynamic kinetic typography + sound riser
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-white/10 p-2.5 text-center text-xs text-white/40">
+                          Chapters & Breakdown Ribbon is currently disabled.
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Full Customization Fields */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {/* Sound Design Customization Card */}
+                      <div className="rounded-xl border border-white/10 bg-black/30 p-4 space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                          <Headphones className="h-3.5 w-3.5" /> Sound Showcase Labels
+                        </h4>
+                        <Field
+                          label="Section Title"
+                          value={content.player.soundShowcaseTitle || "SOUND DESIGN SHOWCASE"}
+                          onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, soundShowcaseTitle: value } }))}
+                        />
+                        <Field
+                          label="Section Subtitle"
+                          value={content.player.soundShowcaseSubtitle || "Toggle audio layers to inspect editing sound design"}
+                          onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, soundShowcaseSubtitle: value } }))}
+                        />
+                        <div className="grid grid-cols-3 gap-2">
+                          <Field
+                            label="Layer 1"
+                            value={content.player.soundShowcaseFullMixLabel || "Full Mix"}
+                            onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, soundShowcaseFullMixLabel: value } }))}
+                          />
+                          <Field
+                            label="Layer 2"
+                            value={content.player.soundShowcaseSfxLabel || "Solo SFX & Voice"}
+                            onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, soundShowcaseSfxLabel: value } }))}
+                          />
+                          <Field
+                            label="Layer 3"
+                            value={content.player.soundShowcaseBassLabel || "Cinema Bass"}
+                            onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, soundShowcaseBassLabel: value } }))}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Chapters Customization Card */}
+                      <div className="rounded-xl border border-white/10 bg-black/30 p-4 space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                          <Bookmark className="h-3.5 w-3.5" /> Chapters & Technique Labels
+                        </h4>
+                        <Field
+                          label="Section Title"
+                          value={content.player.chaptersTitle || "Editing Breakdown & Chapters"}
+                          onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, chaptersTitle: value } }))}
+                        />
+                        <Field
+                          label="Counter Badge Label (e.g. Beats, Chapters, Highlights)"
+                          value={content.player.chaptersBadgeLabel || "Beats"}
+                          onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, chaptersBadgeLabel: value } }))}
+                        />
+                        <Field
+                          label="Active Technique Prefix"
+                          value={content.player.activeTechniquePrefix || "Active Technique:"}
+                          onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, activeTechniquePrefix: value } }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-2 pt-2">
+                    <ToggleField label="Show comments" checked={content.player.showComments} onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showComments: checked } }))} />
+                    <ToggleField label="Show suggestions" checked={content.player.showSuggestions} onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showSuggestions: checked } }))} />
+                    <ToggleField label="Show playback settings" checked={content.player.showPlaybackSettings} onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showPlaybackSettings: checked } }))} />
+                    <ToggleField label="Show reference buttons" checked={content.player.showReferenceButton} onChange={(checked) => setContent((c) => ({ ...c, player: { ...c.player, showReferenceButton: checked } }))} />
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2 pt-2">
+                    <Field label="Back Button Label" value={content.player.backButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, backButtonLabel: value } }))} />
+                    <Field label="Speed Control Label" value={content.player.speedLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, speedLabel: value } }))} />
+                    <Field label="Quality Label" value={content.player.qualityLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, qualityLabel: value } }))} />
+                    <Field label="Reference Button Label" value={content.player.referenceButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, referenceButtonLabel: value } }))} />
+                    <Field label="Suggestions Heading" value={content.player.suggestionsTitle} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, suggestionsTitle: value } }))} />
+                    <Field label="Empty Suggestions Message" value={content.player.suggestionsEmptyMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, suggestionsEmptyMessage: value } }))} />
+                    <Field label="Comments Heading" value={content.player.commentsTitle} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsTitle: value } }))} />
+                    <Field label="Comment Sort Label" value={content.player.commentsSortLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsSortLabel: value } }))} />
+                    <Field label="Newest Sort Option" value={content.player.commentsNewestLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsNewestLabel: value } }))} />
+                    <Field label="Oldest Sort Option" value={content.player.commentsOldestLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsOldestLabel: value } }))} />
+                    <Field label="Name Field Label" value={content.player.commentNameLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentNameLabel: value, commentNamePlaceholder: value } }))} />
+                    <Field label="Comment Field Label" value={content.player.commentBodyLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentBodyLabel: value, commentPlaceholder: value } }))} />
+                    <Field label="Comment Submit Button" value={content.player.commentSubmitLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentSubmitLabel: value } }))} />
+                    <Field label="Comments Empty Message" value={content.player.commentsEmptyMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsEmptyMessage: value } }))} />
+                    <Field label="Comment Privacy Note" value={content.player.commentsPrivacyNote} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsPrivacyNote: value } }))} multiline />
+                    <Field label="YouTube Quality Guidance" value={content.player.youtubeQualityMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, youtubeQualityMessage: value } }))} multiline />
+                    <Field label="Uploaded Video Guidance" value={content.player.sourceQualityMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, sourceQualityMessage: value } }))} multiline />
+                    <Field label="No Video Message" value={content.player.noVideoMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, noVideoMessage: value } }))} />
+                    <Field label="Comments Loading Message" value={content.player.commentsLoadingMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsLoadingMessage: value } }))} />
+                    <Field label="Comments Unavailable Message" value={content.player.commentsUnavailableMessage} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentsUnavailableMessage: value } }))} />
+                    <Field label="Name Field Placeholder" value={content.player.commentNamePlaceholder} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentNamePlaceholder: value } }))} />
+                    <Field label="Comment Field Placeholder" value={content.player.commentPlaceholder} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, commentPlaceholder: value } }))} />
+                    <Field label="Play Button Label" value={content.player.playButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, playButtonLabel: value } }))} />
+                    <Field label="Pause Button Label" value={content.player.pauseButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, pauseButtonLabel: value } }))} />
+                    <Field label="Mute Button Label" value={content.player.muteButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, muteButtonLabel: value } }))} />
+                    <Field label="Unmute Button Label" value={content.player.unmuteButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, unmuteButtonLabel: value } }))} />
+                    <Field label="Fullscreen Button Label" value={content.player.fullscreenButtonLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, fullscreenButtonLabel: value } }))} />
+                    <Field label="Timeline Accessibility Label" value={content.player.timelineLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, timelineLabel: value } }))} />
+                    <Field label="Volume Accessibility Label" value={content.player.volumeLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, volumeLabel: value } }))} />
+                    <Field label="Reference Confirmation Label" value={content.player.referenceAddedLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, referenceAddedLabel: value } }))} />
+                    <Field label="Auto Quality Text" value={content.player.qualityAutoValue} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, qualityAutoValue: value } }))} />
+                    <Field label="Source Quality Text" value={content.player.qualitySourceValue} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, qualitySourceValue: value } }))} />
+                    <Field label="Current Video Heading" value={content.player.currentVideoLabel} onChange={(value) => setContent((c) => ({ ...c, player: { ...c.player, currentVideoLabel: value } }))} />
+                  </div>
                 </div>
               </details>
 
@@ -2517,16 +3118,25 @@ export default function AdminPage() {
           )}
 
           {activeTab === "messages" && (
-            <div className="space-y-3">
-              <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#111] p-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0">
-                  <h2 className="font-semibold text-white">
-                    {messageView === "inbox" ? "Inbox" : "Recycle bin"} ({filteredMessages.length}/{messages.filter((message) => messageView === "trash" ? Boolean(message.deletedAt) : !message.deletedAt).length})
-                  </h2>
-                  <p className="mt-1 text-xs text-white/45">Contact form limit: 5 messages per connection per rolling hour and 20 total per email address.</p>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <div className="flex items-center rounded-xl border border-white/10 bg-[#050505] p-1 text-xs" aria-label="Message location">
+            <div className="space-y-4">
+              {/* Messages Control Center */}
+              <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-[#0e0e14]/90 p-5 shadow-2xl backdrop-blur-2xl">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/5 pb-4">
+                  <div>
+                    <h2 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                      <Mail className="h-5 w-5 text-purple-400" />
+                      {messageView === "inbox" ? "Client Inquiries" : "Recycle Bin"}
+                      <span className="rounded-full bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 text-xs font-semibold text-purple-300">
+                        {filteredMessages.length}
+                      </span>
+                    </h2>
+                    <p className="mt-1 text-xs text-white/50">
+                      Manage incoming client inquiries, review project briefs, and send 1-click automated proposals.
+                    </p>
+                  </div>
+
+                  {/* Location Switcher */}
+                  <div className="flex items-center rounded-2xl border border-white/10 bg-[#07070b] p-1 text-xs">
                     {(["inbox", "trash"] as const).map((view) => (
                       <button
                         key={view}
@@ -2536,70 +3146,87 @@ export default function AdminPage() {
                           setMessageView(view);
                         }}
                         aria-pressed={messageView === view}
-                        className={`rounded-lg px-3 py-2 capitalize ${messageView === view ? "bg-purple-600 text-white" : "text-white/60"}`}
-                      >
-                        {view === "trash" ? `Recycle bin (${messages.filter((message) => message.deletedAt).length})` : "Inbox"}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex items-center rounded-xl border border-white/10 bg-[#050505] p-1 text-xs">
-                    {(["all", "unread", "read"] as const).map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => {
-                          setSelectedMessageIds([]);
-                          setMessageFilter(value);
-                        }}
-                        className={`rounded-lg px-2.5 py-1.5 capitalize ${
-                          messageFilter === value ? "bg-purple-600 text-white" : "text-white/60"
+                        className={`rounded-xl px-3.5 py-2 font-medium transition cursor-pointer capitalize ${
+                          messageView === view
+                            ? "bg-purple-600 text-white shadow-md shadow-purple-900/40"
+                            : "text-white/60 hover:text-white"
                         }`}
                       >
-                        {value}
+                        {view === "trash" ? `Recycle Bin (${messages.filter((m) => m.deletedAt).length})` : "Inbox"}
                       </button>
                     ))}
                   </div>
-                  <input
-                    type="search"
-                    value={messageSearch}
-                    onChange={(e) => {
-                      setSelectedMessageIds([]);
-                      setMessageSearch(e.target.value);
-                    }}
-                    placeholder="Search messages"
-                    className="w-full rounded-xl border border-white/10 bg-[#050505] px-3 py-2 text-sm text-white outline-none focus:border-purple-400/60 sm:w-64"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void refreshMessages()}
-                    disabled={refreshingMessages}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10 disabled:opacity-50"
-                    aria-label="Refresh messages"
-                    title="Refresh messages"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${refreshingMessages ? "animate-spin" : ""}`} />
-                    Refresh
-                  </button>
-                  {currentUser?.permissions.includes("messages:delete") && filteredMessages.length > 0 && (
+                </div>
+
+                {/* Filter and Search Bar */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center rounded-xl border border-white/10 bg-[#07070b] p-1 text-xs">
+                      {(["all", "unread", "read"] as const).map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMessageIds([]);
+                            setMessageFilter(value);
+                          }}
+                          className={`rounded-lg px-3 py-1.5 font-medium transition cursor-pointer capitalize ${
+                            messageFilter === value ? "bg-purple-600/40 text-purple-200 border border-purple-500/40" : "text-white/50 hover:text-white"
+                          }`}
+                        >
+                          {value}
+                        </button>
+                      ))}
+                    </div>
+
                     <button
                       type="button"
-                      onClick={() => {
-                        setSelectingMessages((current) => !current);
-                        setSelectedMessageIds([]);
-                      }}
-                      aria-pressed={selectingMessages}
-                      className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10"
+                      onClick={() => void refreshMessages()}
+                      disabled={refreshingMessages}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 hover:bg-white/10 hover:text-white transition cursor-pointer disabled:opacity-50"
+                      aria-label="Refresh messages"
                     >
-                      {selectingMessages ? <X className="h-4 w-4" /> : <Square className="h-4 w-4" />}
-                      {selectingMessages ? "Done" : "Select"}
+                      <RefreshCw className={`h-3.5 w-3.5 ${refreshingMessages ? "animate-spin text-purple-400" : ""}`} />
+                      Refresh
                     </button>
-                  )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-full sm:w-64">
+                      <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-white/40" />
+                      <input
+                        type="search"
+                        value={messageSearch}
+                        onChange={(e) => {
+                          setSelectedMessageIds([]);
+                          setMessageSearch(e.target.value);
+                        }}
+                        placeholder="Search by client or topic..."
+                        className="w-full rounded-xl border border-white/10 bg-[#07070b] pl-9 pr-3 py-2 text-xs text-white placeholder-white/30 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/15"
+                      />
+                    </div>
+
+                    {currentUser?.permissions.includes("messages:delete") && filteredMessages.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectingMessages((current) => !current);
+                          setSelectedMessageIds([]);
+                        }}
+                        aria-pressed={selectingMessages}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 hover:bg-white/10 cursor-pointer"
+                      >
+                        {selectingMessages ? <X className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+                        {selectingMessages ? "Done" : "Select"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {currentUser?.permissions.includes("messages:delete") && selectingMessages && filteredMessages.length > 0 && (
-                <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#111] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <label className="inline-flex items-center gap-2 text-sm text-white/75">
+                <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#0e0e14] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <label className="inline-flex items-center gap-2 text-xs text-white/75 cursor-pointer">
                     <input
                       type="checkbox"
                       className="admin-checkbox"
@@ -2620,20 +3247,19 @@ export default function AdminPage() {
                         type="button"
                         onClick={() => void updateSelectedMessageTrashState(messageView === "inbox")}
                         disabled={updatingSelectedMessages}
-                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/85 hover:bg-white/10 disabled:cursor-wait disabled:opacity-60"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/85 hover:bg-white/10 cursor-pointer disabled:opacity-50"
                       >
-                        {updatingSelectedMessages ? <Loader2 className="h-4 w-4 animate-spin" /> : messageView === "inbox" ? <Trash2 className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
-                        {updatingSelectedMessages ? "Updating messages" : messageView === "inbox" ? "Move selected to recycle bin" : "Restore selected"}
-                        <span>({selectedMessageIds.filter((id) => filteredMessages.some((message) => message.id === id)).length})</span>
+                        {updatingSelectedMessages ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : messageView === "inbox" ? <Trash2 className="h-3.5 w-3.5" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                        {messageView === "inbox" ? "Move to recycle bin" : "Restore selected"} ({selectedMessageIds.filter((id) => filteredMessages.some((message) => message.id === id)).length})
                       </button>
                       {messageView === "trash" && (
                         <button
                           type="button"
                           onClick={() => void permanentlyDeleteMessages(selectedMessageIds.filter((id) => filteredMessages.some((message) => message.id === id)))}
                           disabled={updatingSelectedMessages}
-                          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-red-400/25 px-4 py-2 text-sm text-red-200 hover:bg-red-400/10 disabled:cursor-wait disabled:opacity-60"
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/20 cursor-pointer disabled:opacity-50"
                         >
-                          <Trash2 className="h-4 w-4" /> Delete selected permanently
+                          <Trash2 className="h-3.5 w-3.5" /> Delete permanently
                         </button>
                       )}
                     </div>
@@ -2642,110 +3268,234 @@ export default function AdminPage() {
               )}
 
               {filteredMessages.length === 0 ? (
-                <p className="rounded-2xl border border-white/10 bg-[#111] p-8 text-center text-white/50">
-                  {messageView === "trash"
-                    ? filteredMessages.length === 0 && messageSearch.trim()
-                      ? "No messages match your search."
-                      : "Recycle bin is empty."
-                    : messages.every((message) => message.deletedAt)
-                      ? "No messages yet."
-                      : "No messages match your search."}
-                </p>
+                <div className="rounded-3xl border border-white/10 bg-[#0e0e14]/90 p-12 text-center shadow-xl">
+                  <Mail className="mx-auto h-8 w-8 text-white/20 mb-3" />
+                  <p className="text-sm font-semibold text-white/60">
+                    {messageView === "trash"
+                      ? filteredMessages.length === 0 && messageSearch.trim()
+                        ? "No messages match your search in the recycle bin."
+                        : "Recycle bin is empty."
+                      : messages.every((message) => message.deletedAt)
+                        ? "No messages received yet."
+                        : "No messages match your search filter."}
+                  </p>
+                </div>
               ) : (
-                filteredMessages.map((msg) => (
-                  <div key={msg.id} className="flex min-w-0 items-start gap-3">
-                    {currentUser?.permissions.includes("messages:delete") && selectingMessages && (
-                      <input
-                        type="checkbox"
-                        checked={selectedMessageIds.includes(msg.id)}
-                        onChange={(event) => setSelectedMessageIds((current) => event.target.checked
-                          ? [...new Set([...current, msg.id])]
-                          : current.filter((id) => id !== msg.id))}
-                        aria-label={`Select message from ${msg.name}`}
-                        className="admin-checkbox mt-5"
-                      />
-                    )}
-                    <details
-                    onToggle={(event) => {
-                      if (event.currentTarget.open && messageView === "inbox" && !msg.read) {
-                        void markRead(msg.id, true);
-                      }
-                    }}
-                    className={`w-full min-w-0 overflow-hidden rounded-2xl border p-4 sm:p-5 ${
-                      msg.read
-                        ? "border-white/10 bg-[#111]/60"
-                        : "border-purple-400/30 bg-[#1a0a2e]/40"
-                    }`}
-                  >
-                    <summary className="mb-2 flex min-w-0 cursor-pointer list-none flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="break-all font-semibold">{msg.name}</p>
-                        <p className="break-all text-sm text-white/60">{msg.email}</p>
-                        <p className="mt-1 break-words text-xs uppercase tracking-wider text-purple-300">
-                          {msg.subject || msg.projectType}
-                        </p>
+                <div className="space-y-2.5">
+                  {filteredMessages.map((msg) => {
+                    const initials = msg.name ? msg.name.trim().slice(0, 2).toUpperCase() : "CX";
+                    const isReplying = replyMessageId === msg.id;
+                    const isExpanded = expandedMessageIds.includes(msg.id) || isReplying;
+                    const analysis = analyzeMessage(msg);
+
+                    const toggleExpand = () => {
+                      setExpandedMessageIds((current) =>
+                        current.includes(msg.id)
+                          ? current.filter((id) => id !== msg.id)
+                          : [...current, msg.id]
+                      );
+                    };
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`overflow-hidden rounded-2xl border transition-all duration-200 ${
+                          !msg.read && messageView === "inbox"
+                            ? "border-purple-500/40 bg-[#120e1a]/95 shadow-lg shadow-purple-950/20 ring-1 ring-purple-500/20"
+                            : "border-white/10 bg-[#0e0e14]/90 hover:border-white/20"
+                        }`}
+                      >
+                        {/* Compact Click-to-Expand Header */}
+                        <div
+                          onClick={toggleExpand}
+                          className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 sm:px-5 hover:bg-white/[0.02] transition select-none"
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            {currentUser?.permissions.includes("messages:delete") && selectingMessages && (
+                              <input
+                                type="checkbox"
+                                checked={selectedMessageIds.includes(msg.id)}
+                                onChange={(event) => {
+                                  event.stopPropagation();
+                                  setSelectedMessageIds((current) => event.target.checked
+                                    ? [...new Set([...current, msg.id])]
+                                    : current.filter((id) => id !== msg.id));
+                                }}
+                                aria-label={`Select message from ${msg.name}`}
+                                className="admin-checkbox"
+                              />
+                            )}
+
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-[11px] font-bold text-white shadow-sm shadow-purple-900/40">
+                              {initials}
+                            </div>
+
+                            <div className="min-w-0 flex items-center gap-2 flex-wrap">
+                              <h3 className="truncate text-xs sm:text-sm font-bold text-white">
+                                {msg.name}
+                              </h3>
+
+                              {!msg.read && messageView === "inbox" && (
+                                <span className="inline-flex items-center gap-1 rounded-full border border-purple-500/40 bg-purple-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-purple-200">
+                                  <span className="h-1 w-1 rounded-full bg-purple-400 animate-pulse" />
+                                  New
+                                </span>
+                              )}
+
+                              {msg.repliedAt && (
+                                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-300">
+                                  Replied ✓
+                                </span>
+                              )}
+
+                              {/* Compact AI Insight Pill */}
+                              <span className="hidden sm:inline-flex items-center gap-1 rounded-md border border-purple-500/25 bg-purple-950/40 px-2 py-0.5 text-[10px] font-medium text-purple-300">
+                                🤖 {analysis.categoryLabel}
+                                {analysis.urgency === "urgent" && <span className="text-amber-400 font-bold">· Urgent</span>}
+                                {analysis.language === "hinglish" && <span className="text-emerald-300 font-bold">· Hinglish</span>}
+                              </span>
+
+                              {/* Snippet preview when collapsed */}
+                              {!isExpanded && (
+                                <span className="hidden lg:inline text-xs text-white/40 truncate max-w-xs xl:max-w-md">
+                                  — {msg.message.replace(/\s+/g, " ")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex shrink-0 items-center gap-2">
+                            <span className="hidden md:inline rounded-lg border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-purple-300">
+                              {msg.subject || msg.projectType}
+                            </span>
+                            <time dateTime={msg.createdAt} className="text-[10px] sm:text-[11px] text-white/40">
+                              {new Date(msg.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+                            </time>
+                            <span className="rounded-lg p-1 text-white/40 hover:bg-white/10 hover:text-white transition">
+                              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Expanded Message Content & Actions */}
+                        {isExpanded && (
+                          <div className="border-t border-white/5 bg-black/20 p-4 sm:p-5 space-y-4">
+                            {/* Email + Meta bar */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="text-white/40">From:</span>
+                                <a
+                                  href={`mailto:${msg.email}`}
+                                  className="text-purple-300 hover:text-purple-200 transition font-medium"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {msg.email}
+                                </a>
+                                {msg.subject && (
+                                  <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/60">
+                                    {msg.subject}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* AI breakdown pills in expanded view */}
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="inline-flex items-center gap-1 rounded bg-purple-900/30 border border-purple-500/20 px-2 py-0.5 text-[10px] text-purple-300">
+                                  Intent: {analysis.categoryLabel}
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] text-white/60">
+                                  Speed: {analysis.urgencyLabel}
+                                </span>
+                                {analysis.wantsPricing && (
+                                  <span className="inline-flex items-center gap-1 rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] text-amber-300 font-semibold">
+                                    💰 Pricing Requested
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Message Body Content */}
+                            <div className="rounded-xl border border-white/5 bg-[#08080c] p-4 text-xs sm:text-sm leading-relaxed text-white/85 whitespace-pre-wrap break-words">
+                              {msg.message}
+                            </div>
+
+                            {/* Action Toolbar */}
+                            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-white/5">
+                              <div className="flex items-center gap-2">
+                                {messageView === "inbox" ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => setReplyMessageId(isReplying ? null : msg.id)}
+                                      aria-expanded={isReplying}
+                                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-purple-600/30 hover:brightness-110 active:scale-95 transition cursor-pointer"
+                                    >
+                                      <Mail className="h-3.5 w-3.5" />
+                                      {isReplying ? "Close Reply" : msg.repliedAt ? "Send Follow-up" : "Reply via Gmail (Automated)"}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => void markRead(msg.id, !msg.read)}
+                                      className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition cursor-pointer"
+                                    >
+                                      {msg.read ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                                      {msg.read ? "Mark unread" : "Mark read"}
+                                    </button>
+
+                                    {currentUser?.permissions.includes("messages:delete") && (
+                                      <button
+                                        type="button"
+                                        onClick={() => void updateMessageTrashState(msg.id, true)}
+                                        className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/50 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 transition cursor-pointer"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                        Trash
+                                      </button>
+                                    )}
+                                  </>
+                                ) : currentUser?.permissions.includes("messages:delete") ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => void updateMessageTrashState(msg.id, false)}
+                                      className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10 transition cursor-pointer"
+                                    >
+                                      <RotateCcw className="h-3.5 w-3.5" /> Restore
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => void permanentlyDeleteMessages([msg.id])}
+                                      className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/20 transition cursor-pointer"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" /> Delete permanently
+                                    </button>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
+
+                            {/* Seamless Reply Composer Container */}
+                            {messageView === "inbox" && isReplying && (
+                              <MessageReplyComposer
+                                message={msg}
+                                senderName={content.founder.name || "CreativeXCreations"}
+                                senderRole={content.founder.role || "Creative Lead"}
+                                senderEmail={content.contact.channels.find((channel) => channel.label === "Email")?.value || ""}
+                                onClose={() => setReplyMessageId(null)}
+                                onReplied={(updated) => {
+                                  setMessages((current) =>
+                                    current.map((item) => (item.id === msg.id ? { ...item, ...updated, read: true } : item))
+                                  );
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="max-w-[48%] shrink-0 text-right sm:max-w-none">
-                        <span className="block break-words text-xs text-white/40">
-                          {new Date(msg.createdAt).toLocaleString()}
-                        </span>
-                        <span className="mt-2 inline-flex rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-white/55">
-                          Open
-                        </span>
-                      </div>
-                    </summary>
-                    <p className="mb-4 min-w-0 max-w-full break-all whitespace-pre-wrap rounded-xl border border-white/10 bg-black/25 p-4 text-sm leading-7 text-white/80">
-                      {msg.message}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {messageView === "inbox" ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => void markRead(msg.id, !msg.read)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs hover:bg-white/5"
-                          >
-                            {msg.read ? <><EyeOff className="h-3.5 w-3.5" /> Mark unread</> : <><Eye className="h-3.5 w-3.5" /> Mark read</>}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openGmailReply(msg)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-purple-500/30 bg-purple-600/10 px-3 py-1.5 text-xs text-purple-200 hover:bg-purple-600/20"
-                          >
-                            <Mail className="h-3.5 w-3.5" /> Reply via Gmail
-                          </button>
-                          {currentUser?.permissions.includes("messages:delete") && (
-                            <button
-                              type="button"
-                              onClick={() => void updateMessageTrashState(msg.id, true)}
-                              className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/75 hover:bg-white/5"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" /> Move to recycle bin
-                            </button>
-                          )}
-                        </>
-                      ) : currentUser?.permissions.includes("messages:delete") ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => void updateMessageTrashState(msg.id, false)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs hover:bg-white/5"
-                          >
-                            <RotateCcw className="h-3.5 w-3.5" /> Restore
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void permanentlyDeleteMessages([msg.id])}
-                            className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/10"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" /> Delete permanently
-                          </button>
-                        </>
-                      ) : null}
-                    </div>
-                  </details>
-                  </div>
-                ))
+                    );
+                  })}
+                </div>
               )}
             </div>
           )}

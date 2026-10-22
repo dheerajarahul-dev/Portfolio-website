@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest) {
     if (typeof body !== "object" || body === null || Array.isArray(body)) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
-    const { id, ids, read, deleted } = body as Record<string, unknown>;
+    const { id, ids, read, deleted, repliedAt } = body as Record<string, unknown>;
     if (ids !== undefined) {
       if (
         !Array.isArray(ids) ||
@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest) {
     if (
       typeof id !== "string" ||
       !id.trim() ||
-      (typeof read !== "boolean" && typeof deleted !== "boolean")
+      (typeof read !== "boolean" && typeof deleted !== "boolean" && typeof repliedAt !== "string" && repliedAt !== null)
     ) {
       return NextResponse.json({ error: "A valid id and message update are required." }, { status: 400 });
     }
@@ -59,6 +59,7 @@ export async function PATCH(request: NextRequest) {
     const updated = await updateMessage(id, {
       ...(typeof read === "boolean" ? { read } : {}),
       ...(typeof deleted === "boolean" ? { deletedAt: deleted ? new Date().toISOString() : null } : {}),
+      ...(typeof repliedAt === "string" || repliedAt === null ? { repliedAt } : {}),
     });
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
